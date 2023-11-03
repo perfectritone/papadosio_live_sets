@@ -1,7 +1,7 @@
 defmodule BandcampScraper.Schemas.Set do
   use Ecto.Schema
 
-  alias BandcampScraper.Schemas.Song
+  alias BandcampScraper.Schemas.SetSong
 
   schema "sets" do
     field :title, :string
@@ -9,7 +9,7 @@ defmodule BandcampScraper.Schemas.Set do
     field :urn, :string
     field :date, :date
     field :release_date, :date
-    has_many :songs, Song
+    has_many :set_songs, SetSong
 
     timestamps()
   end

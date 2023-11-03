@@ -1,9 +1,9 @@
-defmodule BandcampScraper.Schemas.Song do
+defmodule BandcampScraper.Schemas.SetSong do
   use Ecto.Schema
 
   alias BandcampScraper.Schemas.Set
 
-  schema "songs" do
+  schema "set_songs" do
     field :title, :string
     field :urn, :string
     field :duration, :integer

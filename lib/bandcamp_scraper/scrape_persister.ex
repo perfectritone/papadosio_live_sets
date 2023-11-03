@@ -1,6 +1,6 @@
 defmodule BandcampScraper.ScrapePersister do
   alias BandcampScraper.{Repo, Scraper, SetScraper}
-  alias BandcampScraper.Schemas.{Set, Song}
+  alias BandcampScraper.Schemas.{Set, SetSong}
 
   def persist_sets do
     Scraper.scrape_sets()
@@ -24,12 +24,12 @@ defmodule BandcampScraper.ScrapePersister do
 
   def persist_song(set_id, song_data) do
     set_song_data = [set_id: set_id, title: song_data.title]
-    song_record = Song |> Repo.get_by(set_song_data)
+    set_song_record = SetSong |> Repo.get_by(set_song_data)
 
-    unless song_record do
-      song_struct = struct(Song, Map.put(song_data, :set_id, set_id))
+    unless set_song_record do
+      song_struct = struct(SetSong, Map.put(set_song_data, :set_id, set_id))
 
-      {:ok, _song_record} = Repo.insert(song_struct)
+      {:ok, _set_song_record} = Repo.insert(song_struct)
     end
   end
 end
