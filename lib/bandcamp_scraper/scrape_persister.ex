@@ -23,8 +23,14 @@ defmodule BandcampScraper.ScrapePersister do
   end
 
   def persist_song(set_id, song_data) do
-    set_song_data = %{set_id: set_id, title: song_data.title}
-    set_song_record = SetSong |> Repo.get_by(set_song_data)
+    set_song_data = %{
+      set_id: set_id,
+      title: song_data.title,
+      urn: song_data.urn,
+      duration: song_data.duration,
+    }
+
+    set_song_record = SetSong |> Repo.get_by(urn: song_data.urn)
 
     unless set_song_record do
       song_struct = struct(SetSong, Map.put(set_song_data, :set_id, set_id))

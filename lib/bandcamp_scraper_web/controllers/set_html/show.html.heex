@@ -15,5 +15,10 @@
   <:item title="Date"><%= @set.date %></:item>
   <:item title="Release date"><%= @set.release_date %></:item>
 </.list>
+<.table id="set_songs" rows={@set_songs} row_click={&JS.navigate(~p"/set_songs/#{&1}")}>
+  <:col :let={set_song} label="Title"><%= set_song.title %></:col>
+  <:col :let={set_song} label="Urn"><%= set_song.urn %></:col>
+  <:col :let={set_song} label="Duration"><%= set_song.duration %></:col>
+</.table>
 
 <.back navigate={~p"/sets"}>Back to sets</.back>

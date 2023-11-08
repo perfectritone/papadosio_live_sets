@@ -7,6 +7,8 @@ defmodule BandcampScraper.Schemas do
   alias BandcampScraper.Repo
 
   alias BandcampScraper.Schemas.Set
+  alias BandcampScraper.Schemas.SetSong
+  alias BandcampScraper.Schemas.Song
 
   @doc """
   Returns the list of sets.
@@ -102,8 +104,6 @@ defmodule BandcampScraper.Schemas do
     Set.changeset(set, attrs)
   end
 
-  alias BandcampScraper.Schemas.Song
-
   @doc """
   Returns the list of songs.
 
@@ -198,8 +198,6 @@ defmodule BandcampScraper.Schemas do
     Song.changeset(song, attrs)
   end
 
-  alias BandcampScraper.Schemas.SetSong
-
   @doc """
   Returns the list of set_songs.
 
@@ -228,6 +226,25 @@ defmodule BandcampScraper.Schemas do
 
   """
   def get_set_song!(id), do: Repo.get!(SetSong, id)
+
+  @doc """
+  Gets all set_songs from a set.
+
+  Raises `Ecto.NoResultsError` if the Set does not exist.
+
+  ## Examples
+
+      iex> get_set_songs_by_set(123)
+      [%SetSong{}, ...]
+
+      iex> get_set_songs_by_set(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_set_songs_by_set_id!(set_id) do
+    query = SetSong |> where(set_id: ^set_id)
+    Repo.all(query)
+  end
 
   @doc """
   Creates a set_song.

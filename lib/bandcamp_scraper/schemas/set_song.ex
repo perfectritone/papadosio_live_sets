@@ -7,6 +7,7 @@ defmodule BandcampScraper.Schemas.SetSong do
     field :urn, :string
     field :duration, :integer
     field :set_id, :id
+    field :song_id, :id
 
     timestamps(type: :utc_datetime)
   end
