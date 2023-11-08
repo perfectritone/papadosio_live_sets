@@ -1,30 +1,13 @@
 defmodule BandcampScraper.SongTitleNormalizer do
-  require Ecto.Query
-
   alias BandcampScraper.{Repo, Schemas}
-  alias BandcampScraper.Schemas.{SetSong, Song}
 
   def normalize_song_titles do
-    unnormalized_set_songs()
+    Schemas.list_set_songs_without_songs()
     |> Enum.map(&associate_song/1)
   end
 
-  def unnormalized_set_songs do
-    q = Ecto.Query.from(
-      ss in SetSong,
-      where: is_nil(ss.song_id)
-    )
-
-    Repo.all(q)
-  end
-
-  def all_set_songs do
-    SetSong
-    |> Repo.all
-  end
-
   def force_normalize_song_titles do
-    all_set_songs()
+    Schemas.list_set_songs()
     |> Enum.map(&associate_song/1)
   end
 
@@ -42,24 +25,19 @@ defmodule BandcampScraper.SongTitleNormalizer do
   def associate_song(set_song) do
     normalized_title = normalize_song_title(set_song.title)
 
-    song_record = find_or_create_song_record(normalized_title)
+    song_record = Schemas.get_song_by_title(normalized_title)
+                  |> find_or_create_song_record(normalized_title)
 
-    set_song_changeset = Ecto.Changeset.cast(set_song, %{song_id: song_record.id}, [:song_id])
-    Repo.update(set_song_changeset)
+    Schemas.change_set_song(set_song, %{song_id: song_record.id})
+    |> Repo.update
   end
 
-  def find_or_create_song_record(title) do
-    existing_song_record = Song |> Repo.get_by(title: title)
+  def find_or_create_song_record(nil, title) do
+    {:ok, song_record} = Schemas.create_song(%{title: title})
 
-    if existing_song_record do
-      existing_song_record
-    else
-      song_struct = struct(Song, title: title)
-
-      {:ok, new_song_record} = Repo.insert(song_struct)
-      new_song_record
-    end
+    song_record
   end
+  def find_or_create_song_record(record, _title), do: record
 
   def normalize_song_title(raw_title) do
     raw_title
@@ -79,8 +57,4 @@ defmodule BandcampScraper.SongTitleNormalizer do
   def remove_xl(string), do: String.replace(string, ~r/\(?xl\)?\Z/, "")
   def remove_acoustic(string), do: String.replace(string, ~r/\(?acoustic\)?\Z/, "")
   def trim_whitespace(string), do: String.trim(string)
-
-  def delete_all_songs do
-    Repo.delete_all(Song)
-  end
 end

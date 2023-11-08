@@ -133,6 +133,8 @@ defmodule BandcampScraper.Schemas do
   """
   def get_song!(id), do: Repo.get!(Song, id)
 
+  def get_song_by_title(title), do: Repo.get_by(Song, title: title)
+
   @doc """
   Creates a song.
 
@@ -185,6 +187,11 @@ defmodule BandcampScraper.Schemas do
     Repo.delete(song)
   end
 
+  def reset_songs do
+    Repo.update_all(SetSong, set: [song_id: nil])
+    Repo.delete_all(Song)
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking song changes.
 
@@ -209,6 +216,15 @@ defmodule BandcampScraper.Schemas do
   """
   def list_set_songs do
     Repo.all(SetSong)
+  end
+
+  def list_set_songs_without_songs do
+    q = from(
+      ss in SetSong,
+      where: is_nil(ss.song_id)
+    )
+
+    Repo.all(q)
   end
 
   @doc """
