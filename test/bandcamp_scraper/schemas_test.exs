@@ -118,4 +118,62 @@ defmodule BandcampScraper.SchemasTest do
       assert %Ecto.Changeset{} = Schemas.change_song(song)
     end
   end
+
+  describe "set_songs" do
+    alias BandcampScraper.Schemas.SetSong
+
+    import BandcampScraper.SchemasFixtures
+
+    @invalid_attrs %{title: nil, urn: nil, duration: nil}
+
+    test "list_set_songs/0 returns all set_songs" do
+      set_song = set_song_fixture()
+      assert Schemas.list_set_songs() == [set_song]
+    end
+
+    test "get_set_song!/1 returns the set_song with given id" do
+      set_song = set_song_fixture()
+      assert Schemas.get_set_song!(set_song.id) == set_song
+    end
+
+    test "create_set_song/1 with valid data creates a set_song" do
+      valid_attrs = %{title: "some title", urn: "some urn", duration: 42}
+
+      assert {:ok, %SetSong{} = set_song} = Schemas.create_set_song(valid_attrs)
+      assert set_song.title == "some title"
+      assert set_song.urn == "some urn"
+      assert set_song.duration == 42
+    end
+
+    test "create_set_song/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Schemas.create_set_song(@invalid_attrs)
+    end
+
+    test "update_set_song/2 with valid data updates the set_song" do
+      set_song = set_song_fixture()
+      update_attrs = %{title: "some updated title", urn: "some updated urn", duration: 43}
+
+      assert {:ok, %SetSong{} = set_song} = Schemas.update_set_song(set_song, update_attrs)
+      assert set_song.title == "some updated title"
+      assert set_song.urn == "some updated urn"
+      assert set_song.duration == 43
+    end
+
+    test "update_set_song/2 with invalid data returns error changeset" do
+      set_song = set_song_fixture()
+      assert {:error, %Ecto.Changeset{}} = Schemas.update_set_song(set_song, @invalid_attrs)
+      assert set_song == Schemas.get_set_song!(set_song.id)
+    end
+
+    test "delete_set_song/1 deletes the set_song" do
+      set_song = set_song_fixture()
+      assert {:ok, %SetSong{}} = Schemas.delete_set_song(set_song)
+      assert_raise Ecto.NoResultsError, fn -> Schemas.get_set_song!(set_song.id) end
+    end
+
+    test "change_set_song/1 returns a set_song changeset" do
+      set_song = set_song_fixture()
+      assert %Ecto.Changeset{} = Schemas.change_set_song(set_song)
+    end
+  end
 end

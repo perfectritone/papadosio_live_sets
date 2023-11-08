@@ -1,0 +1,17 @@
+<.header>
+  Set song <%= @set_song.id %>
+  <:subtitle>This is a set_song record from your database.</:subtitle>
+  <:actions>
+    <.link href={~p"/set_songs/#{@set_song}/edit"}>
+      <.button>Edit set_song</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Title"><%= @set_song.title %></:item>
+  <:item title="Urn"><%= @set_song.urn %></:item>
+  <:item title="Duration"><%= @set_song.duration %></:item>
+</.list>
+
+<.back navigate={~p"/set_songs"}>Back to set_songs</.back>

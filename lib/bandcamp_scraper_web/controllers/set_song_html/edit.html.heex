@@ -1,0 +1,8 @@
+<.header>
+  Edit Set song <%= @set_song.id %>
+  <:subtitle>Use this form to manage set_song records in your database.</:subtitle>
+</.header>
+
+<.set_song_form changeset={@changeset} action={~p"/set_songs/#{@set_song}"} />
+
+<.back navigate={~p"/set_songs"}>Back to set_songs</.back>

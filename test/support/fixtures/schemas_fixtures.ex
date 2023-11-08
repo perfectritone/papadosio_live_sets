@@ -35,4 +35,20 @@ defmodule BandcampScraper.SchemasFixtures do
 
     song
   end
+
+  @doc """
+  Generate a set_song.
+  """
+  def set_song_fixture(attrs \\ %{}) do
+    {:ok, set_song} =
+      attrs
+      |> Enum.into(%{
+        duration: 42,
+        title: "some title",
+        urn: "some urn"
+      })
+      |> BandcampScraper.Schemas.create_set_song()
+
+    set_song
+  end
 end

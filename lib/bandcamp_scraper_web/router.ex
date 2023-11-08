@@ -20,6 +20,7 @@ defmodule BandcampScraperWeb.Router do
     get "/", SetController, :index
     resources "/sets", SetController
     resources "/songs", SongController
+    resources "/set_songs", SetSongController
   end
 
   # Other scopes may use custom stacks.

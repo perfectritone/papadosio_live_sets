@@ -1,0 +1,25 @@
+<.header>
+  Listing Set songs
+  <:actions>
+    <.link href={~p"/set_songs/new"}>
+      <.button>New Set song</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="set_songs" rows={@set_songs} row_click={&JS.navigate(~p"/set_songs/#{&1}")}>
+  <:col :let={set_song} label="Title"><%= set_song.title %></:col>
+  <:col :let={set_song} label="Urn"><%= set_song.urn %></:col>
+  <:col :let={set_song} label="Duration"><%= set_song.duration %></:col>
+  <:action :let={set_song}>
+    <div class="sr-only">
+      <.link navigate={~p"/set_songs/#{set_song}"}>Show</.link>
+    </div>
+    <.link navigate={~p"/set_songs/#{set_song}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={set_song}>
+    <.link href={~p"/set_songs/#{set_song}"} method="delete" data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>

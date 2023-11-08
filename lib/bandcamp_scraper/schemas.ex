@@ -197,4 +197,100 @@ defmodule BandcampScraper.Schemas do
   def change_song(%Song{} = song, attrs \\ %{}) do
     Song.changeset(song, attrs)
   end
+
+  alias BandcampScraper.Schemas.SetSong
+
+  @doc """
+  Returns the list of set_songs.
+
+  ## Examples
+
+      iex> list_set_songs()
+      [%SetSong{}, ...]
+
+  """
+  def list_set_songs do
+    Repo.all(SetSong)
+  end
+
+  @doc """
+  Gets a single set_song.
+
+  Raises `Ecto.NoResultsError` if the Set song does not exist.
+
+  ## Examples
+
+      iex> get_set_song!(123)
+      %SetSong{}
+
+      iex> get_set_song!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_set_song!(id), do: Repo.get!(SetSong, id)
+
+  @doc """
+  Creates a set_song.
+
+  ## Examples
+
+      iex> create_set_song(%{field: value})
+      {:ok, %SetSong{}}
+
+      iex> create_set_song(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_set_song(attrs \\ %{}) do
+    %SetSong{}
+    |> SetSong.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a set_song.
+
+  ## Examples
+
+      iex> update_set_song(set_song, %{field: new_value})
+      {:ok, %SetSong{}}
+
+      iex> update_set_song(set_song, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_set_song(%SetSong{} = set_song, attrs) do
+    set_song
+    |> SetSong.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a set_song.
+
+  ## Examples
+
+      iex> delete_set_song(set_song)
+      {:ok, %SetSong{}}
+
+      iex> delete_set_song(set_song)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_set_song(%SetSong{} = set_song) do
+    Repo.delete(set_song)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking set_song changes.
+
+  ## Examples
+
+      iex> change_set_song(set_song)
+      %Ecto.Changeset{data: %SetSong{}}
+
+  """
+  def change_set_song(%SetSong{} = set_song, attrs \\ %{}) do
+    SetSong.changeset(set_song, attrs)
+  end
 end
