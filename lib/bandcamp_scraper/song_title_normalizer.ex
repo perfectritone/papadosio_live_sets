@@ -1,7 +1,7 @@
 defmodule BandcampScraper.SongTitleNormalizer do
   require Ecto.Query
 
-  alias BandcampScraper.Repo
+  alias BandcampScraper.{Repo, Schemas}
   alias BandcampScraper.Schemas.{SetSong, Song}
 
   def normalize_song_titles do
@@ -26,6 +26,17 @@ defmodule BandcampScraper.SongTitleNormalizer do
   def force_normalize_song_titles do
     all_set_songs()
     |> Enum.map(&associate_song/1)
+  end
+
+  def generated_normalized_song_titles do
+    Schemas.list_set_songs()
+    |> Enum.map(&(normalize_song_title(&1.title)))
+    |> Enum.uniq
+  end
+
+  def generated_normalized_song_title_count do
+    generated_normalized_song_titles()
+    |> Enum.count
   end
 
   def associate_song(set_song) do
