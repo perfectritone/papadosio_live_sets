@@ -14,6 +14,7 @@ defmodule BandcampScraper.Repo.Migrations.CreateSets do
 
     create table(:songs) do
       add :title, :string
+      add :release_id, references(:sets)
 
       timestamps(type: :utc_datetime)
     end

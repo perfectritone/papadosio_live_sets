@@ -1,12 +1,18 @@
 defmodule BandcampScraper.Schemas.Song do
   use Ecto.Schema
-
-  alias BandcampScraper.Schemas.SetSong
+  import Ecto.Changeset
 
   schema "songs" do
     field :title, :string
-    has_many :set_songs, SetSong
+    field :release_id, :id
 
-    timestamps()
+    timestamps(type: :utc_datetime)
+  end
+
+  @doc false
+  def changeset(song, attrs) do
+    song
+    |> cast(attrs, [:title])
+    |> validate_required([:title])
   end
 end

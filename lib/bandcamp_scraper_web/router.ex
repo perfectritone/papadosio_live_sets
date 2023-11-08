@@ -17,8 +17,9 @@ defmodule BandcampScraperWeb.Router do
   scope "/", BandcampScraperWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-    resources "/sets", SetController, only: [:index, :show]
+    get "/", SetController, :index
+    resources "/sets", SetController
+    resources "/songs", SongController
   end
 
   # Other scopes may use custom stacks.

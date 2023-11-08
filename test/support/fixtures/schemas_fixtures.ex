@@ -21,4 +21,18 @@ defmodule BandcampScraper.SchemasFixtures do
 
     set
   end
+
+  @doc """
+  Generate a song.
+  """
+  def song_fixture(attrs \\ %{}) do
+    {:ok, song} =
+      attrs
+      |> Enum.into(%{
+        title: "some title"
+      })
+      |> BandcampScraper.Schemas.create_song()
+
+    song
+  end
 end
