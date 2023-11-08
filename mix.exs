@@ -51,7 +51,8 @@ defmodule BandcampScraper.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:plug_cowboy, "~> 2.5"},
-      {:httpoison, "~> 2.1.0"}
+      {:httpoison, "~> 2.1.0"},
+      {:credo, "~> 1.7", only: :dev}
     ]
   end
 
