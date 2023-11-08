@@ -23,7 +23,7 @@ defmodule BandcampScraper.ScrapePersister do
   end
 
   def persist_song(set_id, song_data) do
-    set_song_data = [set_id: set_id, title: song_data.title]
+    set_song_data = %{set_id: set_id, title: song_data.title}
     set_song_record = SetSong |> Repo.get_by(set_song_data)
 
     unless set_song_record do

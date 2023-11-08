@@ -1,0 +1,19 @@
+<.header>
+  Set <%= @set.id %>
+  <:subtitle>This is a set record from your database.</:subtitle>
+  <:actions>
+    <.link href={~p"/sets/#{@set}/edit"}>
+      <.button>Edit set</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Title"><%= @set.title %></:item>
+  <:item title="Thumbnail"><%= @set.thumbnail %></:item>
+  <:item title="Urn"><%= @set.urn %></:item>
+  <:item title="Date"><%= @set.date %></:item>
+  <:item title="Release date"><%= @set.release_date %></:item>
+</.list>
+
+<.back navigate={~p"/sets"}>Back to sets</.back>

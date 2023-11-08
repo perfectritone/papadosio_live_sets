@@ -1,0 +1,27 @@
+<.header>
+  Listing Sets
+  <:actions>
+    <.link href={~p"/sets/new"}>
+      <.button>New Set</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="sets" rows={@sets} row_click={&JS.navigate(~p"/sets/#{&1}")}>
+  <:col :let={set} label="Title"><%= set.title %></:col>
+  <:col :let={set} label="Thumbnail"><%= set.thumbnail %></:col>
+  <:col :let={set} label="Urn"><%= set.urn %></:col>
+  <:col :let={set} label="Date"><%= set.date %></:col>
+  <:col :let={set} label="Release date"><%= set.release_date %></:col>
+  <:action :let={set}>
+    <div class="sr-only">
+      <.link navigate={~p"/sets/#{set}"}>Show</.link>
+    </div>
+    <.link navigate={~p"/sets/#{set}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={set}>
+    <.link href={~p"/sets/#{set}"} method="delete" data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>
