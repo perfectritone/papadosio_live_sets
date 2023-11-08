@@ -1,6 +1,6 @@
 defmodule BandcampScraper.ScrapePersister do
-  alias BandcampScraper.{Repo, Scraper, SetScraper}
-  alias BandcampScraper.Schemas.{Set, SetSong}
+  alias BandcampScraper.{Scraper, SetScraper}
+  alias BandcampScraper.Schemas
 
   def persist_sets do
     Scraper.scrape_sets()
@@ -8,34 +8,26 @@ defmodule BandcampScraper.ScrapePersister do
   end
 
   def persist_set(set_data) do
-    unless Set |> Repo.get_by(title: set_data.title) do
-      set_struct = struct(Set, set_data)
-
-      {:ok, set_record} = Repo.insert(set_struct)
-
-      persist_songs(set_record)
-    end
+    Schemas.get_set_by_title(set_data.title)
+    |> create_set_unless_exists(set_data)
   end
 
-  def persist_songs(set_record) do
+  def create_set_unless_exists(nil, set_data) do
+    {:ok, set_record} = Schemas.create_set(set_data)
+
+    persist_set_songs(set_record)
+
+    set_record
+  end
+  def create_set_unless_exists(record, _set_data), do: record
+
+  def persist_set_songs(set_record) do
     SetScraper.scrape_set(set_record.urn)
-    |> Enum.map(&persist_song(set_record.id, &1))
+    |> Enum.map(&Map.put(&1, :set_id, set_record.id))
+    |> Enum.map(&persist_set_song/1)
   end
 
-  def persist_song(set_id, song_data) do
-    set_song_data = %{
-      set_id: set_id,
-      title: song_data.title,
-      urn: song_data.urn,
-      duration: song_data.duration,
-    }
-
-    set_song_record = SetSong |> Repo.get_by(urn: song_data.urn)
-
-    unless set_song_record do
-      song_struct = struct(SetSong, Map.put(set_song_data, :set_id, set_id))
-
-      {:ok, _set_song_record} = Repo.insert(song_struct)
-    end
+  def persist_set_song(set_song_data) do
+    {:ok, _set_song_record} = Schemas.create_set_song(set_song_data)
   end
 end

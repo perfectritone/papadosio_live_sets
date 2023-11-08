@@ -44,21 +44,21 @@ defmodule BandcampScraper.Scraper do
     |> String.trim
   end
 
-  defp parse_date_from_title(title) do
-    Regex.run(~r/\d+.\d+.\d+/, title)
-    |> retrieve_date_from_formatted_string
-  end
+  # defp parse_date_from_title(title) do
+  #   Regex.run(~r/\d+.\d+.\d+/, title)
+  #   |> retrieve_date_from_formatted_string
+  # end
 
-  defp retrieve_date_from_formatted_string(nil), do: nil
-  defp retrieve_date_from_formatted_string(match) do
-    [month, day, year] =
-      match
-      |> List.first
-      |> String.split(".")
-      |> Enum.map(&String.to_integer/1)
+  # defp retrieve_date_from_formatted_string(nil), do: nil
+  # defp retrieve_date_from_formatted_string(match) do
+  #   [month, day, year] =
+  #     match
+  #     |> List.first
+  #     |> String.split(".")
+  #     |> Enum.map(&String.to_integer/1)
 
-    Date.new(year, month, day)
-  end
+  #   Date.new(year, month, day)
+  # end
 
   defp parse_urn(html_tree) do
     Floki.attribute(html_tree, "href")

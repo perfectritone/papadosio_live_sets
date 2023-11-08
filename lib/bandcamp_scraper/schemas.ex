@@ -39,6 +39,10 @@ defmodule BandcampScraper.Schemas do
   """
   def get_set!(id), do: Repo.get!(Set, id)
 
+  def get_set_by_title(title) do
+    Repo.get_by(Set, title: title)
+  end
+
   @doc """
   Creates a set.
 
@@ -258,8 +262,8 @@ defmodule BandcampScraper.Schemas do
 
   """
   def get_set_songs_by_set_id!(set_id) do
-    query = SetSong |> where(set_id: ^set_id)
-    Repo.all(query)
+    q = SetSong |> where(set_id: ^set_id)
+    Repo.all(q)
   end
 
   @doc """

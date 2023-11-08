@@ -16,7 +16,7 @@ defmodule BandcampScraper.Schemas.Set do
   @doc false
   def changeset(set, attrs) do
     set
-    |> cast(attrs, [:title, :thumbnail, :urn, :date])
-    |> validate_required([:title, :thumbnail, :urn, :date, :release_date])
+    |> cast(attrs, [:title, :thumbnail, :urn, :date, :release_date])
+    |> validate_required([:title, :thumbnail, :urn])
   end
 end
