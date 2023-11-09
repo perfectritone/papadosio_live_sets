@@ -8,7 +8,7 @@
 </.header>
 
 <.table id="songs" rows={@songs} row_click={&JS.navigate(~p"/songs/#{&1}")}>
-  <:col :let={song} label="Title"><%= song.title %></:col>
+  <:col :let={song} label="Title"><%= song.display_name %></:col>
   <:action :let={song}>
     <div class="sr-only">
       <.link navigate={~p"/songs/#{song}"}>Show</.link>
