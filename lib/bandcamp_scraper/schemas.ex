@@ -139,6 +139,15 @@ defmodule BandcampScraper.Schemas do
 
   def get_song_by_title(title), do: Repo.get_by(Song, title: title)
 
+  def get_song_with_set_songs!(id) do
+    Repo.all(from song in Song,
+      where: song.id == ^id,
+      join: set_song in assoc(song, :set_songs),
+      join: set in assoc(set_song, :set),
+      preload: [set_songs: {set_song, set: set}]
+    ) |> List.first
+  end
+
   @doc """
   Creates a song.
 
@@ -247,6 +256,15 @@ defmodule BandcampScraper.Schemas do
   """
   def get_set_song!(id), do: Repo.get!(SetSong, id)
 
+  def get_set_song_with_set_and_song!(id) do
+    Repo.all(from set_song in SetSong,
+      where: set_song.id == ^id,
+      join: song in assoc(set_song, :song),
+      join: set in assoc(set_song, :set),
+      preload: [:song, :set]
+    ) |> List.first
+  end
+
   @doc """
   Gets all set_songs from a set.
 
@@ -263,6 +281,11 @@ defmodule BandcampScraper.Schemas do
   """
   def get_set_songs_by_set_id!(set_id) do
     q = SetSong |> where(set_id: ^set_id)
+    Repo.all(q)
+  end
+
+  def get_set_songs_by_song_id!(song_id) do
+    q = SetSong |> where(song_id: ^song_id)
     Repo.all(q)
   end
 

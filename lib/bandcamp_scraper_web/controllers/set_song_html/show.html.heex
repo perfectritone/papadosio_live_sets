@@ -10,12 +10,13 @@
 
 <.list>
   <:item title="Title"><%= @set_song.title %></:item>
+  <:item title="Set"><%= @set_song.set.title %></:item>
   <:item title="Urn"><%= @set_song.urn %></:item>
   <:item title="Duration"><%= @set_song.duration %></:item>
 </.list>
 
-<.table id="songs" rows={@songs} row_click={&JS.navigate(~p"/songs/#{&1}")}>
-  <:col :let={song} label="Title"><%= song.title %></:col>
+<.table id="songs" rows={[@set_song.song]} row_click={&JS.navigate(~p"/songs/#{&1}")}>
+  <:col :let={song} label="Title"><%= song.display_name %></:col>
 </.table>
 
 <.back navigate={~p"/set_songs"}>Back to set_songs</.back>

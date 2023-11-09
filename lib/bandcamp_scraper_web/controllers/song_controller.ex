@@ -27,7 +27,8 @@ defmodule BandcampScraperWeb.SongController do
   end
 
   def show(conn, %{"id" => id}) do
-    song = Schemas.get_song!(id)
+    song = Schemas.get_song_with_set_songs!(id)
+    #set_songs = Schemas.get_set_songs_by_song
     render(conn, :show, song: song)
   end
 

@@ -5,6 +5,8 @@ defmodule BandcampScraper.Schemas.Song do
   schema "songs" do
     field :title, :string
     field :release_id, :id
+    field :display_name, :string
+    has_many :set_songs, BandcampScraper.Schemas.SetSong
 
     timestamps(type: :utc_datetime)
   end
@@ -12,7 +14,7 @@ defmodule BandcampScraper.Schemas.Song do
   @doc false
   def changeset(song, attrs) do
     song
-    |> cast(attrs, [:title])
+    |> cast(attrs, [:title, :display_name])
     |> validate_required([:title])
   end
 end

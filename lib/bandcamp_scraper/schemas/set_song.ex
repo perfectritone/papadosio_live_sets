@@ -6,8 +6,8 @@ defmodule BandcampScraper.Schemas.SetSong do
     field :title, :string
     field :urn, :string
     field :duration, :integer
-    field :set_id, :id
-    field :song_id, :id
+    belongs_to :set, BandcampScraper.Schemas.Set
+    belongs_to :song, BandcampScraper.Schemas.Song
 
     timestamps(type: :utc_datetime)
   end
@@ -15,7 +15,7 @@ defmodule BandcampScraper.Schemas.SetSong do
   @doc false
   def changeset(set_song, attrs) do
     set_song
-    |> cast(attrs, [:title, :urn, :duration])
-    |> validate_required([:title, :urn, :duration])
+    |> cast(attrs, [:title, :urn, :duration, :set_id, :song_id])
+    |> validate_required([:title, :urn, :duration, :set_id])
   end
 end
