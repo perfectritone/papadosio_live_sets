@@ -17,9 +17,4 @@
     </div>
     <.link navigate={~p"/set_songs/#{set_song}/edit"}>Edit</.link>
   </:action>
-  <:action :let={set_song}>
-    <.link href={~p"/set_songs/#{set_song}"} method="delete" data-confirm="Are you sure?">
-      Delete
-    </.link>
-  </:action>
 </.table>
