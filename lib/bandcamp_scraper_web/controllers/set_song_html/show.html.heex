@@ -1,6 +1,5 @@
 <.header>
-  Set song <%= @set_song.id %>
-  <:subtitle>This is a set_song record from your database.</:subtitle>
+  <%= @set_song.title %>
   <:actions>
     <.link href={~p"/set_songs/#{@set_song}/edit"}>
       <.button>Edit set_song</.button>
@@ -9,7 +8,6 @@
 </.header>
 
 <.list>
-  <:item title="Title"><%= @set_song.title %></:item>
   <:item title="Set"><%= @set_song.set.title %></:item>
   <:item title="Urn"><%= @set_song.urn %></:item>
   <:item title="Duration"><%= @duration %></:item>

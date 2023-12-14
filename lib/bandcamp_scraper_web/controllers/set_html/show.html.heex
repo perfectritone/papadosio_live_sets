@@ -1,6 +1,5 @@
 <.header>
-  Set <%= @set.id %>
-  <:subtitle>This is a set record from your database.</:subtitle>
+  <%= @set.title %>
   <:actions>
     <.link href={~p"/sets/#{@set}/edit"}>
       <.button>Edit set</.button>
