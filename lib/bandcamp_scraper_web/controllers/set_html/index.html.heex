@@ -9,7 +9,6 @@
 
 <.table id="sets" rows={@sets} row_click={&JS.navigate(~p"/sets/#{&1}")}>
   <:col :let={set} label="Title"><%= set.title %></:col>
-  <:col :let={set} label="Thumbnail"><%= set.thumbnail %></:col>
   <:col :let={set} label="Urn"><%= set.urn %></:col>
   <:col :let={set} label="Date"><%= set.date %></:col>
   <:col :let={set} label="Release date"><%= set.release_date %></:col>
