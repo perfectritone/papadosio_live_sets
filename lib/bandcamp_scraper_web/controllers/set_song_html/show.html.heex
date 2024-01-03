@@ -9,7 +9,9 @@
 
 <.list>
   <:item title="Set"><%= @set_song.set.title %></:item>
-  <:item title="Urn"><%= @set_song.urn %></:item>
+  <:item title="URL">
+    <%= Phoenix.HTML.Link.link "Bandcamp Link", to: @url %>
+  </:item>
   <:item title="Duration"><%= @duration %></:item>
 </.list>
 

@@ -3,6 +3,7 @@ defmodule BandcampScraperWeb.SetSongController do
 
   alias BandcampScraper.Schemas
   alias BandcampScraper.Schemas.SetSong
+  alias BandcampScraperWeb.ViewHelpers
 
   def index(conn, _params) do
     set_songs = Schemas.list_set_songs()
@@ -29,7 +30,12 @@ defmodule BandcampScraperWeb.SetSongController do
   def show(conn, %{"id" => id}) do
     set_song = Schemas.get_set_song_with_set_and_song!(id)
     duration = set_song.duration |> BandcampScraper.Duration.seconds_to_human_readable
-    render(conn, :show, set_song: set_song, duration: duration)
+    url = ViewHelpers.urn_to_bandcamp_url(set_song.urn)
+
+    render(conn, :show,
+      set_song: set_song,
+      duration: duration,
+      url: url)
   end
 
   def edit(conn, %{"id" => id}) do

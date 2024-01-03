@@ -10,7 +10,9 @@
 <img {@thumbnail_attrs} />
 
 <.list>
-  <:item title="Urn"><%= @set.urn %></:item>
+  <:item title="URL">
+    <%= Phoenix.HTML.Link.link "Bandcamp Link", to: @url %>
+  </:item>
   <:item title="Date"><%= @set.date %></:item>
   <:item title="Release date"><%= @set.release_date %></:item>
 </.list>
