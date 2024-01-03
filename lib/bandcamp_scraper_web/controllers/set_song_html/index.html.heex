@@ -10,7 +10,7 @@
 <.table id="set_songs" rows={@set_songs} row_click={&JS.navigate(~p"/set_songs/#{&1}")}>
   <:col :let={set_song} label="Title"><%= set_song.title %></:col>
   <:col :let={set_song} label="Urn"><%= set_song.urn %></:col>
-  <:col :let={set_song} label="Duration"><%= set_song.duration %></:col>
+  <:col :let={set_song} label="Duration"><%= set_song.duration |> seconds_to_human_readable %></:col>
   <:action :let={set_song}>
     <div class="sr-only">
       <.link navigate={~p"/set_songs/#{set_song}"}>Show</.link>

@@ -22,7 +22,7 @@
     <%= Phoenix.HTML.Link.link "Link", to: bandcamp_url_from_schema(set_song) %>
   </:col>
   <:col :let={set_song} label="Duration">
-    <%= set_song.duration |> BandcampScraper.Duration.seconds_to_human_readable %>
+    <%= set_song.duration |> seconds_to_human_readable %>
   </:col>
 </.table>
 

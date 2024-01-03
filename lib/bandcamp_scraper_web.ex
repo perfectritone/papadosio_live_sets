@@ -87,6 +87,7 @@ defmodule BandcampScraperWeb do
       import BandcampScraperWeb.CoreComponents
       import BandcampScraperWeb.Gettext
       import BandcampScraperWeb.BandcampUrlHelper
+      import BandcampScraperWeb.Duration
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

@@ -14,7 +14,7 @@
   <:item title="URL">
     <%= Phoenix.HTML.Link.link "Link", to: bandcamp_url_from_schema(@set_song) %>
   </:item>
-  <:item title="Duration"><%= @duration %></:item>
+  <:item title="Duration"><%= @set_song.duration |> seconds_to_human_readable %></:item>
   <:item title="Song">
     <%= Phoenix.HTML.Link.link @set_song.song.display_name, to: ~p"/songs/#{@set_song.song.id}" %>
   </:item>
