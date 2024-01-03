@@ -1,4 +1,4 @@
-defmodule BandcampScraperWeb.ViewHelpers do
+defmodule BandcampScraperWeb.BandcampUrlHelper do
 
   def bandcamp_url_from_schema(schema) do
     schema.urn

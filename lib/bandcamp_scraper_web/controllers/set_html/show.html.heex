@@ -11,14 +11,16 @@
 
 <.list>
   <:item title="URL">
-    <%= Phoenix.HTML.Link.link "Bandcamp Link", to: @url %>
+    <%= Phoenix.HTML.Link.link "Bandcamp Link", to: bandcamp_url_from_schema(@set) %>
   </:item>
   <:item title="Date"><%= @set.date %></:item>
   <:item title="Release date"><%= @set.release_date %></:item>
 </.list>
 <.table id="set_songs" rows={@set_songs} row_click={&JS.navigate(~p"/set_songs/#{&1}")}>
   <:col :let={set_song} label="Title"><%= set_song.title %></:col>
-  <:col :let={set_song} label="Urn"><%= set_song.urn %></:col>
+  <:col :let={set_song} label="Bandcamp Link">
+    <%= Phoenix.HTML.Link.link "Link", to: bandcamp_url_from_schema(set_song) %>
+  </:col>
   <:col :let={set_song} label="Duration">
     <%= set_song.duration |> BandcampScraper.Duration.seconds_to_human_readable %>
   </:col>

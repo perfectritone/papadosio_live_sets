@@ -3,7 +3,6 @@ defmodule BandcampScraperWeb.SetController do
 
   alias BandcampScraper.Schemas
   alias BandcampScraper.Schemas.Set
-  alias BandcampScraperWeb.ViewHelpers
 
   def index(conn, _params) do
     sets = Schemas.list_sets()
@@ -30,7 +29,6 @@ defmodule BandcampScraperWeb.SetController do
   def show(conn, %{"id" => id}) do
     set = Schemas.get_set!(id)
     set_songs = Schemas.get_set_songs_by_set_id!(id)
-    url = ViewHelpers.urn_to_bandcamp_url(set.urn)
     thumbnail_attrs = %{
       src: set.thumbnail
     }
@@ -38,8 +36,8 @@ defmodule BandcampScraperWeb.SetController do
     render(conn, :show,
       set: set,
       set_songs: set_songs,
-      thumbnail_attrs: thumbnail_attrs,
-      url: url)
+      thumbnail_attrs: thumbnail_attrs
+    )
   end
 
   def edit(conn, %{"id" => id}) do

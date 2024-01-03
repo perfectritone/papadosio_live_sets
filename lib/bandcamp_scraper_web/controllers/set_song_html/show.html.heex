@@ -8,15 +8,16 @@
 </.header>
 
 <.list>
-  <:item title="Set"><%= @set_song.set.title %></:item>
+  <:item title="Set">
+    <%= Phoenix.HTML.Link.link @set_song.set.title, to: ~p"/sets/#{@set_song.set.id}" %>
+  </:item>
   <:item title="URL">
-    <%= Phoenix.HTML.Link.link "Bandcamp Link", to: @url %>
+    <%= Phoenix.HTML.Link.link "Link", to: bandcamp_url_from_schema(@set_song) %>
   </:item>
   <:item title="Duration"><%= @duration %></:item>
+  <:item title="Song">
+    <%= Phoenix.HTML.Link.link @set_song.song.display_name, to: ~p"/songs/#{@set_song.song.id}" %>
+  </:item>
 </.list>
-
-<.table id="songs" rows={[@set_song.song]} row_click={&JS.navigate(~p"/songs/#{&1}")}>
-  <:col :let={song} label="Title"><%= song.display_name %></:col>
-</.table>
 
 <.back navigate={~p"/set_songs"}>Back to set_songs</.back>
