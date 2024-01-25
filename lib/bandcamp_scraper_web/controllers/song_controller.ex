@@ -27,10 +27,12 @@ defmodule BandcampScraperWeb.SongController do
   end
 
   def show(conn, params) do
-    song = Schemas.get_song!(params["id"])
-    set_songs = Schemas.get_set_songs_for_song!(params["id"], params)
+    id = Map.fetch!(params, "id")
+    song = Schemas.get_song!(id)
 
-    render(conn, :show, song: song, set_songs: set_songs)
+    with {:ok, {set_songs, meta}} <- Schemas.get_set_songs_for_song!(id, params) do
+      render(conn, :show, meta: meta, set_songs: set_songs, song: song)
+    end
   end
 
   def edit(conn, %{"id" => id}) do

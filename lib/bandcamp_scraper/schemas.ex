@@ -140,13 +140,11 @@ defmodule BandcampScraper.Schemas do
   def get_song_by_title(title), do: Repo.get_by(Song, title: title)
 
   def get_set_songs_for_song!(id, params \\ %{}) do
-  {:ok, {flop, _meta}} = SetSong
-                         |> where([set_song], set_song.song_id == ^id)
-                         |> join(:left, [set_song], set in assoc(set_song, :set), as: :set)
-                         |> preload([:set])
-                         |> Flop.validate_and_run(params, for: SetSong)
-
-    flop
+    SetSong
+    |> where([set_song], set_song.song_id == ^id)
+    |> join(:left, [set_song], set in assoc(set_song, :set), as: :set)
+    |> preload([:set])
+    |> Flop.validate_and_run(params, for: SetSong)
   end
 
   @doc """
