@@ -4,8 +4,8 @@ defmodule BandcampScraperWeb.SetSongController do
   alias BandcampScraper.Schemas
   alias BandcampScraper.Schemas.SetSong
 
-  def index(conn, _params) do
-    set_songs = Schemas.list_set_songs()
+  def index(conn, params) do
+    set_songs = Schemas.list_set_songs(params)
     render(conn, :index, set_songs: set_songs)
   end
 

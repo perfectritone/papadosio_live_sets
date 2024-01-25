@@ -36,7 +36,7 @@ defmodule BandcampScraper.MixProject do
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.10"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 3.3"},
+      {:phoenix_html, "~> 3.3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.20.1"},
       {:floki, ">= 0.30.0"},
@@ -52,6 +52,7 @@ defmodule BandcampScraper.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 2.1.0"},
+      {:flop_phoenix, "0.22.4"},
       {:credo, "~> 1.7", only: :dev}
     ]
   end

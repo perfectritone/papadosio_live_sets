@@ -227,8 +227,10 @@ defmodule BandcampScraper.Schemas do
       [%SetSong{}, ...]
 
   """
-  def list_set_songs do
-    Repo.all(SetSong)
+  def list_set_songs(params \\ %{}) do
+    {:ok, {flop, _meta}} = Flop.validate_and_run(SetSong, params, for: SetSong)
+
+    flop
   end
 
   def list_set_songs_without_songs do
