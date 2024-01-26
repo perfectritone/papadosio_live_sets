@@ -11,8 +11,8 @@
   <:item title="Set">
     <%= Phoenix.HTML.Link.link @set_song.set.title, to: ~p"/sets/#{@set_song.set.id}" %>
   </:item>
-  <:item title="URL">
-    <%= Phoenix.HTML.Link.link "Link", to: bandcamp_url_from_schema(@set_song) %>
+  <:item title="Bandcamp Link">
+    <%= Phoenix.HTML.Link.link "Listen", to: bandcamp_url_from_schema(@set_song) %>
   </:item>
   <:item title="Duration"><%= @set_song.duration |> seconds_to_human_readable %></:item>
   <:item title="Song">

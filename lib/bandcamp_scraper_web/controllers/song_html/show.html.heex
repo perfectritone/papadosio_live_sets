@@ -9,7 +9,9 @@
 
 <Flop.Phoenix.table items={@set_songs} meta={@meta} path={~p"/songs/#{@song}"}>
   <:col :let={set_song} label="Set"><%= set_song.set.title %></:col>
-  <:col :let={set_song} label="Urn"><%= set_song.urn %></:col>
+  <:col :let={set_song} label="Bandcamp Link">
+    <%= Phoenix.HTML.Link.link "Listen", to: bandcamp_url_from_schema(set_song) %>
+  </:col>
   <:col :let={set_song} label="Duration" field={:duration}><%= set_song.duration |> seconds_to_human_readable %></:col>
 </Flop.Phoenix.table>
 
