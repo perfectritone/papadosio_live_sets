@@ -2,6 +2,12 @@ defmodule BandcampScraper.Schemas.Song do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {
+    Flop.Schema,
+    filterable: [:title],
+    sortable: [:title]
+  }
+
   schema "songs" do
     field :title, :string
     field :release_id, :id

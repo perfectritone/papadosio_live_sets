@@ -7,12 +7,12 @@
   </:actions>
 </.header>
 
-<.table id="songs" rows={@songs} row_click={&JS.navigate(~p"/songs/#{&1}")}>
-  <:col :let={song} label="Title"><%= song.display_name %></:col>
+<Flop.Phoenix.table items={@songs} meta={@meta} path={~p"/songs"} row_click={&JS.navigate(~p"/songs/#{&1}")}>
+  <:col :let={song} label="Title" field={:title}><%= song.display_name %></:col>
   <:action :let={song}>
     <div class="sr-only">
       <.link navigate={~p"/songs/#{song}"}>Show</.link>
     </div>
     <.link navigate={~p"/songs/#{song}/edit"}>Edit</.link>
   </:action>
-</.table>
+</Flop.Phoenix.table>

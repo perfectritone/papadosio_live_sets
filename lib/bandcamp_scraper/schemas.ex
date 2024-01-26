@@ -117,8 +117,9 @@ defmodule BandcampScraper.Schemas do
       [%Song{}, ...]
 
   """
-  def list_songs do
-    Repo.all(Song)
+  def list_songs(params \\ %{}) do
+    Song
+    |> Flop.validate_and_run(params, for: Song)
   end
 
   @doc """
