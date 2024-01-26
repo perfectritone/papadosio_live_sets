@@ -1,3 +1,12 @@
+<ul>
+  <li>
+    <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets" %>
+  </li>
+  <li>
+    <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs" %>
+  </li>
+</ul>
+
 <main class="px-4 py-5 sm:px-6 lg:px-8">
   <div class="mx-auto max-w-2xl">
     <.flash_group flash={@flash} />
