@@ -117,7 +117,20 @@ defmodule BandcampScraper.Schemas do
       [%Song{}, ...]
 
   """
-  def list_songs(params \\ %{}) do
+  def list_songs do
+    Repo.all(Song)
+  end
+
+  @doc """
+  Returns the list of songs filtered using Flop.
+
+  ## Examples
+
+      iex> list_songs(%{flop: params, ...)
+      [%Song{}, ...]
+
+  """
+  def list_songs(params) do
     Song
     |> Flop.validate_and_run(params, for: Song)
   end
@@ -140,7 +153,16 @@ defmodule BandcampScraper.Schemas do
 
   def get_song_by_title(title), do: Repo.get_by(Song, title: title)
 
-  def get_set_songs_for_song!(id, params \\ %{}) do
+  def get_set_songs_for_song!(id) do
+    Repo.all(from song in Song,
+      where: song.id == ^id,
+      join: set_song in assoc(song, :set_songs),
+      join: set in assoc(set_song, :set),
+      preload: [set_songs: {set_song, set: set}]
+    ) |> List.first
+  end
+
+  def get_set_songs_for_song!(id, params) do
     SetSong
     |> where([set_song], set_song.song_id == ^id)
     |> join(:left, [set_song], set in assoc(set_song, :set), as: :set)
@@ -227,7 +249,20 @@ defmodule BandcampScraper.Schemas do
       [%SetSong{}, ...]
 
   """
-  def list_set_songs(params \\ %{}) do
+  def list_set_songs do
+    Repo.all(SetSong)
+  end
+
+  @doc """
+  Returns the list of set_songs filtered using Flop.
+
+  ## Examples
+
+      iex> list_set_songs(%{flop: param, ...})
+      [%SetSong{}, ...]
+
+  """
+  def list_set_songs(params) do
     {:ok, {flop, _meta}} = Flop.validate_and_run(SetSong, params, for: SetSong)
 
     flop
