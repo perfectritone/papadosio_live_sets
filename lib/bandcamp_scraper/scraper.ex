@@ -18,30 +18,30 @@ defmodule BandcampScraper.Scraper do
     HTTPoison.get!(url).body
   end
 
-  defp extract_sets(html) do
+  def extract_sets(html) do
+    extract_data_client_items(html)
+    |> transform_client_items
+  end
+
+  def extract_data_client_items(html) do
     {:ok, document} = Floki.parse_document(html)
 
     Floki.find(document, "ol.music-grid")
-    |> Floki.find("li")
-    |> Enum.map(&Floki.find(&1, "a"))
-    |> Enum.map(&map_set_attrs/1)
+    |> Floki.attribute("data-client-items")
+    |> Jason.decode!
   end
 
-  defp map_set_attrs(html_tree) do
-    title = parse_title(html_tree)
+  def transform_client_items(client_items) do
+    Enum.map(client_items, &transform_client_item/1)
+  end
 
+  def transform_client_item(client_item) do
     %{
-      title: title,
-      urn: parse_urn(html_tree),
-      #date: parse_date_from_title(title),
-      thumbnail: parse_thumbnail(html_tree)
+      title: client_item["title"],
+      urn: client_item["page_url"],
+      thumbnail: "https://f4.bcbits.com/img/a#{client_item["art_id"]}_2.jpg"
+      #date: parse_date_from_title(client_item["title"]),
     }
-  end
-
-  defp parse_title(html_tree) do
-    Floki.find(html_tree, "p")
-    |> Floki.text
-    |> String.trim
   end
 
   # defp parse_date_from_title(title) do
@@ -59,15 +59,4 @@ defmodule BandcampScraper.Scraper do
 
   #   Date.new(year, month, day)
   # end
-
-  defp parse_urn(html_tree) do
-    Floki.attribute(html_tree, "href")
-    |> List.first
-  end
-
-  defp parse_thumbnail(html_tree) do
-    Floki.find(html_tree, "div img")
-    |> Floki.attribute("src")
-    |> List.first
-  end
 end

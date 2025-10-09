@@ -5,7 +5,7 @@ defmodule BandcampScraper.MixProject do
     [
       app: :bandcamp_scraper,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.16.3",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
