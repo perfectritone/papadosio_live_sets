@@ -2,14 +2,23 @@ defmodule BandcampScraperWeb.SongsLive do
   use BandcampScraperWeb, :live_view
 
   alias BandcampScraper.Music
+  alias BandcampScraper.Accounts
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
+    current_user = case session["user_id"] do
+      nil -> nil
+      user_id -> Accounts.get_user!(user_id)
+    end
+
     {:ok, assign(socket,
       songs: Music.list_songs(%{}),
       search: "",
-      sort: "asc"
+      sort: "asc",
+      current_user: current_user
     )}
+  rescue
+    Ecto.NoResultsError -> {:ok, assign(socket, songs: Music.list_songs(%{}), search: "", sort: "asc", current_user: nil)}
   end
 
   @impl true
@@ -37,15 +46,17 @@ defmodule BandcampScraperWeb.SongsLive do
     <.header>
       All Songs
       <:actions>
-        <.link href={~p"/songs/new"}>
-          <.button>New Song</.button>
-        </.link>
+        <%= if @current_user && @current_user.role == "admin" do %>
+          <.link href={~p"/songs/new"}>
+            <.button>New Song</.button>
+          </.link>
+        <% end %>
       </:actions>
     </.header>
 
     <form phx-change="search" class="mb-4 flex flex-wrap gap-4 items-end">
       <div>
-        <label for="search" class="block text-sm font-medium text-zinc-700">Search</label>
+        <label for="search" class="block text-sm font-medium text-dosio-teal">Search</label>
         <input
           type="text"
           name="search"
@@ -53,20 +64,20 @@ defmodule BandcampScraperWeb.SongsLive do
           value={@search}
           placeholder="Search songs..."
           phx-debounce="300"
-          class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm"
+          class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm"
         />
       </div>
 
       <div>
-        <label for="sort" class="block text-sm font-medium text-zinc-700">Sort</label>
-        <select name="sort" id="sort" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+        <label for="sort" class="block text-sm font-medium text-dosio-teal">Sort</label>
+        <select name="sort" id="sort" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
           <option value="asc" selected={@sort == "asc"}>A-Z</option>
           <option value="desc" selected={@sort == "desc"}>Z-A</option>
         </select>
       </div>
 
       <div>
-        <.link href={~p"/songs"} class="text-sm text-zinc-600 hover:text-zinc-900">Clear</.link>
+        <.link href={~p"/songs"} class="text-sm text-dosio-teal hover:text-white">Clear</.link>
       </div>
     </form>
 
@@ -76,7 +87,9 @@ defmodule BandcampScraperWeb.SongsLive do
         <div class="sr-only">
           <.link navigate={~p"/songs/#{song}"}>Show</.link>
         </div>
-        <.link navigate={~p"/songs/#{song}/edit"}>Edit</.link>
+        <%= if @current_user && @current_user.role == "admin" do %>
+          <.link navigate={~p"/songs/#{song}/edit"}>Edit</.link>
+        <% end %>
       </:action>
     </.table>
     """
