@@ -467,6 +467,56 @@ defmodule BandcampScraper.Music do
     Repo.delete(song)
   end
 
+  alias BandcampScraper.Music.SongMerge
+
+  @doc """
+  Merges a source song into a target song.
+
+  All set_songs linked to the source song will be moved to the target song,
+  then the source song is deleted. The merge is recorded for audit/seeding.
+
+  Returns `{:ok, target_song}` or `{:error, reason}`.
+  """
+  def merge_songs(source_id, target_id, user_id \\ nil)
+  def merge_songs(source_id, target_id, _user_id) when source_id == target_id do
+    {:error, "Cannot merge a song into itself"}
+  end
+  def merge_songs(source_id, target_id, user_id) do
+    source = get_song!(source_id)
+    target = get_song!(target_id)
+
+    Repo.transaction(fn ->
+      # Record the merge
+      %SongMerge{}
+      |> SongMerge.changeset(%{
+        source_title: source.title,
+        target_title: target.title,
+        target_song_id: target.id,
+        user_id: user_id
+      })
+      |> Repo.insert!()
+
+      # Move all set_songs from source to target
+      from(ss in SetSong, where: ss.song_id == ^source.id)
+      |> Repo.update_all(set: [song_id: target.id])
+
+      # Delete the source song
+      Repo.delete!(source)
+
+      target
+    end)
+  end
+
+  @doc """
+  Returns all song merges for seeding/audit.
+  """
+  def list_song_merges do
+    SongMerge
+    |> order_by([m], asc: m.inserted_at)
+    |> Repo.all()
+    |> Repo.preload([:user, :target_song])
+  end
+
   @doc """
   Resets all songs - removes song associations from set_songs and deletes all songs.
   Uses a transaction to ensure atomicity.

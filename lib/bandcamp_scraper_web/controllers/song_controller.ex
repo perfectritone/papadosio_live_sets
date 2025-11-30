@@ -33,13 +33,14 @@ defmodule BandcampScraperWeb.SongController do
   def show(conn, params) do
     id = Map.fetch!(params, "id")
     song = Music.get_song!(id)
+    all_songs = Music.list_songs(%{"sort" => "asc"})
 
     case Music.get_set_songs_for_song(id, params) do
       {:ok, {set_songs, meta}} ->
-        render(conn, :show, meta: meta, set_songs: set_songs, song: song)
+        render(conn, :show, meta: meta, set_songs: set_songs, song: song, all_songs: all_songs)
 
       {:error, meta} ->
-        render(conn, :show, meta: meta, set_songs: [], song: song)
+        render(conn, :show, meta: meta, set_songs: [], song: song, all_songs: all_songs)
     end
   end
 
@@ -70,5 +71,21 @@ defmodule BandcampScraperWeb.SongController do
     conn
     |> put_flash(:info, "Song deleted successfully.")
     |> redirect(to: ~p"/songs")
+  end
+
+  def merge(conn, %{"id" => id, "target_id" => target_id}) do
+    user_id = conn.assigns[:current_user] && conn.assigns.current_user.id
+
+    case Music.merge_songs(id, target_id, user_id) do
+      {:ok, target} ->
+        conn
+        |> put_flash(:info, "Songs merged successfully.")
+        |> redirect(to: ~p"/songs/#{target}")
+
+      {:error, reason} ->
+        conn
+        |> put_flash(:error, "Failed to merge: #{reason}")
+        |> redirect(to: ~p"/songs/#{id}")
+    end
   end
 end
