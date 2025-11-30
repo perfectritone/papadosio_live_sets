@@ -44,7 +44,7 @@ defmodule BandcampScraperWeb.SongsLive do
   def render(assigns) do
     ~H"""
     <.header>
-      All Songs
+      Songs
       <:actions>
         <%= if @current_user && @current_user.role == "admin" do %>
           <.link href={~p"/songs/new"}>

@@ -116,7 +116,7 @@ defmodule BandcampScraperWeb.SetsLive do
   def render(assigns) do
     ~H"""
     <.header>
-      All Sets
+      Sets
     </.header>
 
     <form phx-change="filter" phx-submit="filter" class="mb-4 space-y-4" id="set-filter-form">

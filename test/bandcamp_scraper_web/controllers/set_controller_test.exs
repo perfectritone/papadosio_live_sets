@@ -10,7 +10,7 @@ defmodule BandcampScraperWeb.SetControllerTest do
   describe "index" do
     test "lists all sets", %{conn: conn} do
       conn = get(conn, ~p"/sets")
-      assert html_response(conn, 200) =~ "All Sets"
+      assert html_response(conn, 200) =~ "Sets"
     end
   end
 

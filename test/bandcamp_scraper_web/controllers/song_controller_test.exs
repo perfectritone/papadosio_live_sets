@@ -10,7 +10,7 @@ defmodule BandcampScraperWeb.SongControllerTest do
   describe "index" do
     test "lists all songs", %{conn: conn} do
       conn = get(conn, ~p"/songs")
-      assert html_response(conn, 200) =~ "All Songs"
+      assert html_response(conn, 200) =~ "Songs"
     end
   end
 
