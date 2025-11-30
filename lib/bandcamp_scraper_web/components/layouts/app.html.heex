@@ -7,6 +7,9 @@
       <li>
         <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs", class: "text-dosio-mint hover:text-white transition" %>
       </li>
+      <li>
+        <%= Phoenix.HTML.Link.link "Variants", to: ~p"/variants", class: "text-dosio-mint hover:text-white transition" %>
+      </li>
     </ul>
     <ul class="flex gap-4 items-center">
       <%= if @current_user do %>
