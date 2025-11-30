@@ -114,7 +114,7 @@
 <.table id="sets" rows={@sets} row_click={&JS.navigate(~p"/sets/#{&1}")}>
   <:col :let={set} label="Title"><%= set.title %></:col>
   <:col :let={set} label="Bandcamp Link">
-    <%= Phoenix.HTML.Link.link "Listen", to: bandcamp_url_from_schema(set) %>
+    <.link href={bandcamp_url_from_schema(set)} target="_blank" class="text-dosio-mint hover:text-white">Listen</.link>
   </:col>
   <:col :let={set} label="Date"><%= effective_date(set) %></:col>
   <:action :let={set}>

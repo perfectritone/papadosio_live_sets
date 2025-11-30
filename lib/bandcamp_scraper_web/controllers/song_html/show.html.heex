@@ -26,7 +26,7 @@
     <.link navigate={~p"/set_songs/#{set_song}"} class="text-dosio-mint hover:text-white">View</.link>
   </:col>
   <:col :let={set_song} label="Bandcamp Link">
-    <%= Phoenix.HTML.Link.link "Listen", to: bandcamp_url_from_schema(set_song) %>
+    <.link href={bandcamp_url_from_schema(set_song)} target="_blank" class="text-dosio-mint hover:text-white">Listen</.link>
   </:col>
   <:col :let={set_song} label="Duration" field={:duration}><%= set_song.duration |> seconds_to_human_readable %></:col>
 </Flop.Phoenix.table>

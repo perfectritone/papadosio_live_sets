@@ -2,13 +2,13 @@
   <div class="flex justify-between items-center">
     <ul class="flex gap-6">
       <li>
-        <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets", class: "text-dosio-mint hover:text-white transition" %>
+        <.link href={~p"/sets"} class="text-dosio-mint hover:text-white transition">Sets</.link>
       </li>
       <li>
-        <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs", class: "text-dosio-mint hover:text-white transition" %>
+        <.link href={~p"/songs"} class="text-dosio-mint hover:text-white transition">Songs</.link>
       </li>
       <li>
-        <%= Phoenix.HTML.Link.link "Variants", to: ~p"/variants", class: "text-dosio-mint hover:text-white transition" %>
+        <.link href={~p"/variants"} class="text-dosio-mint hover:text-white transition">Variants</.link>
       </li>
     </ul>
     <ul class="flex gap-4 items-center">
@@ -20,14 +20,14 @@
           <% end %>
         </li>
         <li>
-          <%= Phoenix.HTML.Link.link "Log out", to: ~p"/logout", method: :delete, class: "text-dosio-mint hover:text-white transition text-sm" %>
+          <.link href={~p"/logout"} method="delete" class="text-dosio-mint hover:text-white transition text-sm">Log out</.link>
         </li>
       <% else %>
         <li>
-          <%= Phoenix.HTML.Link.link "Log in", to: ~p"/login", class: "text-dosio-mint hover:text-white transition text-sm" %>
+          <.link href={~p"/login"} class="text-dosio-mint hover:text-white transition text-sm">Log in</.link>
         </li>
         <li>
-          <%= Phoenix.HTML.Link.link "Sign up", to: ~p"/signup", class: "text-dosio-mint hover:text-white transition text-sm" %>
+          <.link href={~p"/signup"} class="text-dosio-mint hover:text-white transition text-sm">Sign up</.link>
         </li>
       <% end %>
     </ul>
