@@ -2,7 +2,7 @@
   <%= @set_song.title %>
   <:actions>
     <.link href={~p"/set_songs/#{@set_song}/edit"}>
-      <.button>Edit set_song</.button>
+      <.button>Edit</.button>
     </.link>
   </:actions>
 </.header>
@@ -40,5 +40,3 @@
     <% end %>
   </:item>
 </.list>
-
-<.back navigate={~p"/set_songs"}>Back to set_songs</.back>
