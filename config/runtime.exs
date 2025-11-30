@@ -20,6 +20,10 @@ if System.get_env("PHX_SERVER") do
   config :bandcamp_scraper, BandcampScraperWeb.Endpoint, server: true
 end
 
+# Phoenix Analytics configuration
+config :phoenix_analytics,
+  repo: BandcampScraper.Repo
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
