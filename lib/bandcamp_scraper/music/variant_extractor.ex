@@ -81,9 +81,10 @@ defmodule BandcampScraper.Music.VariantExtractor do
     {title, variants} = extract_pattern(title, variants, ~r/\s+(?:ft\.?|feat\.?)\s+(.+?)$/i, "guest", fn m -> "ft. #{m}" end)
     {title, variants} = extract_pattern(title, variants, ~r/\s+w\/\s+(.+?)$/i, "guest", fn m -> "ft. #{m}" end)
 
-    # Transitions: > at end (song continues into next)
+    # Transitions: > or - at end (song continues into next)
     {title, variants} = extract_pattern(title, variants, ~r/\s*>\s*$/, "transition", fn _ -> ">" end)
     {title, variants} = extract_pattern(title, variants, ~r/\s*->\s*$/, "transition", fn _ -> ">" end)
+    {title, variants} = extract_pattern(title, variants, ~r/\s+-\s*$/, "transition", fn _ -> ">" end)
 
     # Remixes: - (Name Remix)
     {title, variants} = extract_remix(title, variants)
@@ -97,7 +98,26 @@ defmodule BandcampScraper.Music.VariantExtractor do
     # Starred (notable version): Song*
     {title, variants} = extract_pattern(title, variants, ~r/\*$/, "notable", fn _ -> "*" end)
 
+    # Psy prefix (Psypoly, Psipolygons -> Polygons with Psy variant)
+    {title, variants} = extract_psy_prefix(title, variants)
+
     {String.trim(title), Enum.reverse(variants)}
+  end
+
+  # Songs that have "Psy" prefix variants
+  @psy_songs %{
+    "psypoly" => "Polygons",
+    "psipoly" => "Polygons",
+    "psipolygons" => "Polygons",
+    "psypolygons" => "Polygons"
+  }
+
+  defp extract_psy_prefix(title, variants) do
+    normalized = String.downcase(String.trim(title))
+    case Map.get(@psy_songs, normalized) do
+      nil -> {title, variants}
+      canonical -> {canonical, [{"Psy", "version"} | variants]}
+    end
   end
 
   @doc """

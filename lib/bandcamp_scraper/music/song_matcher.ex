@@ -10,7 +10,23 @@ defmodule BandcampScraper.Music.SongMatcher do
   alias BandcampScraper.Repo
   alias BandcampScraper.Music.{Song, SetSong, VariantExtractor}
 
-  @default_threshold 0.85
+  @default_threshold 0.80
+
+  # Song aliases - map variations to canonical song title
+  # Format: %{"normalized_alias" => "Canonical Title"}
+  @song_aliases %{
+    # Polygons variations
+    "polygone" => "Polygons",
+    "psipoly" => "Polygons",
+    "psipolygons" => "Polygons",
+    "psypoly" => "Polygons",
+    "psypolygons" => "Polygons",
+    # Typo fixes
+    "and this is what he though" => "...And This Is What He Thought",
+    # Spacing variations
+    "2am" => "2 AM",
+    "2 am" => "2 AM"
+  }
 
   @doc """
   Finds or creates a song for a set_song based on fuzzy title matching.
@@ -34,20 +50,24 @@ defmodule BandcampScraper.Music.SongMatcher do
     clean_title = VariantExtractor.clean_title(title)
     normalized = normalize_title(clean_title)
 
-    # Try exact match first
-    case find_exact_match(normalized) do
+    # Check for alias first
+    canonical_title = Map.get(@song_aliases, normalized, clean_title)
+    canonical_normalized = normalize_title(canonical_title)
+
+    # Try exact match first (using canonical title)
+    case find_exact_match(canonical_normalized) do
       %Song{} = song ->
         song
 
       nil ->
         # Try fuzzy match
-        case find_fuzzy_match(normalized, threshold) do
+        case find_fuzzy_match(canonical_normalized, threshold) do
           %Song{} = song ->
             song
 
           nil ->
-            # Create new song with cleaned title
-            create_song(clean_title)
+            # Create new song with canonical title
+            create_song(canonical_title)
         end
     end
   end
@@ -131,15 +151,41 @@ defmodule BandcampScraper.Music.SongMatcher do
     Song
     |> Repo.all()
     |> Enum.map(fn song ->
-      score = String.jaro_distance(normalized_title, normalize_title(song.title))
-      {song, score}
+      other_normalized = normalize_title(song.title)
+      score = String.jaro_distance(normalized_title, other_normalized)
+      {song, score, other_normalized}
     end)
-    |> Enum.filter(fn {_song, score} -> score >= threshold end)
-    |> Enum.max_by(fn {_song, score} -> score end, fn -> nil end)
+    |> Enum.filter(fn {_song, score, other_normalized} ->
+      score >= threshold and is_valid_match?(normalized_title, other_normalized)
+    end)
+    |> Enum.max_by(fn {_song, score, _} -> score end, fn -> nil end)
     |> case do
-      {song, _score} -> song
+      {song, _score, _} -> song
       nil -> nil
     end
+  end
+
+  defp is_valid_match?(title1, title2) do
+    # Don't match if one is a substring of the other (e.g., "Improv" vs "105 Improv")
+    not String.contains?(title1, title2) and
+    not String.contains?(title2, title1) and
+    # Don't match if lengths are too different (>40% difference)
+    length_ratio(title1, title2) >= 0.6 and
+    # First word should match (prevents "1979" matching "Eye")
+    first_word_matches?(title1, title2)
+  end
+
+  defp length_ratio(s1, s2) do
+    len1 = String.length(s1)
+    len2 = String.length(s2)
+    min(len1, len2) / max(len1, len2)
+  end
+
+  defp first_word_matches?(title1, title2) do
+    word1 = title1 |> String.split() |> List.first() || ""
+    word2 = title2 |> String.split() |> List.first() || ""
+    # First words should be similar (allowing for typos)
+    String.jaro_distance(word1, word2) >= 0.8
   end
 
   defp create_song(title) do
