@@ -294,12 +294,12 @@ defmodule BandcampScraper.Schemas do
   def get_set_song!(id), do: Repo.get!(SetSong, id)
 
   def get_set_song_with_set_and_song!(id) do
-    Repo.all(from set_song in SetSong,
+    Repo.one!(from set_song in SetSong,
       where: set_song.id == ^id,
-      join: song in assoc(set_song, :song),
-      join: set in assoc(set_song, :set),
+      left_join: song in assoc(set_song, :song),
+      left_join: set in assoc(set_song, :set),
       preload: [:song, :set]
-    ) |> List.first
+    )
   end
 
   @doc """

@@ -9,14 +9,22 @@
 
 <.list>
   <:item title="Set">
-    <%= Phoenix.HTML.Link.link @set_song.set.title, to: ~p"/sets/#{@set_song.set.id}" %>
+    <%= if @set_song.set do %>
+      <%= Phoenix.HTML.Link.link @set_song.set.title, to: ~p"/sets/#{@set_song.set.id}" %>
+    <% else %>
+      <span class="text-zinc-500">No set</span>
+    <% end %>
   </:item>
   <:item title="Bandcamp Link">
     <%= Phoenix.HTML.Link.link "Listen", to: bandcamp_url_from_schema(@set_song) %>
   </:item>
   <:item title="Duration"><%= @set_song.duration |> seconds_to_human_readable %></:item>
   <:item title="Song">
-    <%= Phoenix.HTML.Link.link @set_song.song.display_name, to: ~p"/songs/#{@set_song.song.id}" %>
+    <%= if @set_song.song do %>
+      <%= Phoenix.HTML.Link.link @set_song.song.display_name, to: ~p"/songs/#{@set_song.song.id}" %>
+    <% else %>
+      <span class="text-zinc-500">No song</span>
+    <% end %>
   </:item>
 </.list>
 
