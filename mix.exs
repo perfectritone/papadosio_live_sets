@@ -53,7 +53,8 @@ defmodule BandcampScraper.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 2.1.0"},
       {:flop_phoenix, "0.22.4"},
-      {:credo, "~> 1.7", only: :dev}
+      {:credo, "~> 1.7", only: :dev},
+      {:bcrypt_elixir, "~> 3.0"}
     ]
   end
 

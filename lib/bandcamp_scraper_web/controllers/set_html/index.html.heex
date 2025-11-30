@@ -50,6 +50,8 @@
     <div class="sr-only">
       <.link navigate={~p"/sets/#{set}"}>Show</.link>
     </div>
-    <.link navigate={~p"/sets/#{set}/edit"}>Edit</.link>
+    <%= if @current_user && @current_user.role == "admin" do %>
+      <.link navigate={~p"/sets/#{set}/edit"}>Edit</.link>
+    <% end %>
   </:action>
 </.table>

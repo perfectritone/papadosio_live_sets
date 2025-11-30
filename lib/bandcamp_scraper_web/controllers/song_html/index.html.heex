@@ -1,9 +1,11 @@
 <.header>
   All Songs
   <:actions>
-    <.link href={~p"/songs/new"}>
-      <.button>New Song</.button>
-    </.link>
+    <%= if @current_user && @current_user.role == "admin" do %>
+      <.link href={~p"/songs/new"}>
+        <.button>New Song</.button>
+      </.link>
+    <% end %>
   </:actions>
 </.header>
 
@@ -48,6 +50,8 @@
     <div class="sr-only">
       <.link navigate={~p"/songs/#{song}"}>Show</.link>
     </div>
-    <.link navigate={~p"/songs/#{song}/edit"}>Edit</.link>
+    <%= if @current_user && @current_user.role == "admin" do %>
+      <.link navigate={~p"/songs/#{song}/edit"}>Edit</.link>
+    <% end %>
   </:action>
 </.table>

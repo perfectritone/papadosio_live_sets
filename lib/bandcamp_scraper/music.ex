@@ -636,8 +636,9 @@ defmodule BandcampScraper.Music do
 
   @doc """
   Adds a variant to a set_song. Set manual: true for manually added variants.
+  Optional user_id to track who made the change.
   """
-  def add_variant_to_set_song(set_song_id, variant_id, manual \\ false) do
+  def add_variant_to_set_song(set_song_id, variant_id, manual \\ false, user_id \\ nil) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     Repo.insert_all(
@@ -646,6 +647,7 @@ defmodule BandcampScraper.Music do
         set_song_id: set_song_id,
         variant_id: variant_id,
         manual: manual,
+        user_id: user_id,
         inserted_at: now,
         updated_at: now
       }],

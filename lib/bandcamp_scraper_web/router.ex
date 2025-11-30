@@ -8,24 +8,56 @@ defmodule BandcampScraperWeb.Router do
     plug :put_root_layout, html: {BandcampScraperWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug BandcampScraperWeb.Plugs.Auth, :fetch_current_user
+  end
+
+  pipeline :require_authenticated do
+    plug BandcampScraperWeb.Plugs.Auth, :require_authenticated_user
+  end
+
+  pipeline :require_admin do
+    plug BandcampScraperWeb.Plugs.Auth, :require_admin
   end
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
+  # Public routes
   scope "/", BandcampScraperWeb do
     pipe_through :browser
 
     get "/", SetController, :index
-    resources "/sets", SetController
+    get "/login", SessionController, :new
+    post "/login", SessionController, :create
+    delete "/logout", SessionController, :delete
+    get "/signup", RegistrationController, :new
+    post "/signup", RegistrationController, :create
+
+    # Read-only resources
+    resources "/sets", SetController, only: [:index, :show]
     live "/songs", SongsLive, :index
-    resources "/songs", SongController, except: [:index]
-    resources "/set_songs", SetSongController
+    resources "/songs", SongController, only: [:show]
+    resources "/set_songs", SetSongController, only: [:index, :show]
+    resources "/variants", VariantController, only: [:index, :show]
+  end
+
+  # Authenticated user routes (can add/remove variants)
+  scope "/", BandcampScraperWeb do
+    pipe_through [:browser, :require_authenticated]
+
     post "/set_songs/:id/add_variant", SetSongController, :add_variant
     post "/set_songs/:id/add_new_variant", SetSongController, :add_new_variant
     delete "/set_songs/:id/remove_variant/:variant_id", SetSongController, :remove_variant
-    resources "/variants", VariantController, only: [:index, :show]
+  end
+
+  # Admin-only routes
+  scope "/", BandcampScraperWeb do
+    pipe_through [:browser, :require_admin]
+
+    resources "/sets", SetController, only: [:new, :create, :edit, :update, :delete]
+    resources "/songs", SongController, only: [:new, :create, :edit, :update, :delete]
+    resources "/set_songs", SetSongController, only: [:new, :create, :edit, :update, :delete]
   end
 
   # Other scopes may use custom stacks.

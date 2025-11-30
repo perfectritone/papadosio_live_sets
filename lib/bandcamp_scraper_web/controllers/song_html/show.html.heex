@@ -1,9 +1,11 @@
 <.header>
   <%= @song.display_name || @song.title %>
   <:actions>
-    <.link href={~p"/songs/#{@song}/edit"}>
-      <.button>Edit song</.button>
-    </.link>
+    <%= if @current_user && @current_user.role == "admin" do %>
+      <.link href={~p"/songs/#{@song}/edit"}>
+        <.button>Edit song</.button>
+      </.link>
+    <% end %>
   </:actions>
 </.header>
 

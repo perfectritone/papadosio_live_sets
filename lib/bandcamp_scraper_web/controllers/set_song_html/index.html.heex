@@ -1,9 +1,11 @@
 <.header>
   Listing Set songs
   <:actions>
-    <.link href={~p"/set_songs/new"}>
-      <.button>New Set song</.button>
-    </.link>
+    <%= if @current_user && @current_user.role == "admin" do %>
+      <.link href={~p"/set_songs/new"}>
+        <.button>New Set song</.button>
+      </.link>
+    <% end %>
   </:actions>
 </.header>
 
@@ -15,6 +17,8 @@
     <div class="sr-only">
       <.link navigate={~p"/set_songs/#{set_song}"}>Show</.link>
     </div>
-    <.link navigate={~p"/set_songs/#{set_song}/edit"}>Edit</.link>
+    <%= if @current_user && @current_user.role == "admin" do %>
+      <.link navigate={~p"/set_songs/#{set_song}/edit"}>Edit</.link>
+    <% end %>
   </:action>
 </.table>

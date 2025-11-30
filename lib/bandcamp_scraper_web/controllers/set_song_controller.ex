@@ -45,7 +45,8 @@ defmodule BandcampScraperWeb.SetSongController do
   end
 
   def add_variant(conn, %{"id" => id, "variant_id" => variant_id}) do
-    Music.add_variant_to_set_song(String.to_integer(id), String.to_integer(variant_id), true)
+    user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    Music.add_variant_to_set_song(String.to_integer(id), String.to_integer(variant_id), true, user_id)
 
     conn
     |> put_flash(:info, "Variant added.")
@@ -53,8 +54,9 @@ defmodule BandcampScraperWeb.SetSongController do
   end
 
   def add_new_variant(conn, %{"id" => id, "variant" => %{"name" => name, "category" => category}}) do
+    user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
     variant = Music.get_or_create_variant(name, category)
-    Music.add_variant_to_set_song(String.to_integer(id), variant.id, true)
+    Music.add_variant_to_set_song(String.to_integer(id), variant.id, true, user_id)
 
     conn
     |> put_flash(:info, "Variant '#{name}' added.")

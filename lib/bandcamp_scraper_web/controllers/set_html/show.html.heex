@@ -7,9 +7,11 @@
 <.header>
   <%= @set.title %>
   <:actions>
-    <.link href={~p"/sets/#{@set}/edit"}>
-      <.button>Edit set</.button>
-    </.link>
+    <%= if @current_user && @current_user.role == "admin" do %>
+      <.link href={~p"/sets/#{@set}/edit"}>
+        <.button>Edit set</.button>
+      </.link>
+    <% end %>
   </:actions>
 </.header>
 

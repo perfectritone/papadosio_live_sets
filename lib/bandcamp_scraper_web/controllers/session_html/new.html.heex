@@ -1,0 +1,20 @@
+<.header>
+  Log in
+</.header>
+
+<div class="mt-8 max-w-md">
+  <.simple_form :let={f} for={%{}} action={~p"/login"} as={:session}>
+    <.input field={f[:username]} type="text" label="Username" required />
+    <.input field={f[:password]} type="password" label="Password" required />
+    <:actions>
+      <.button>Log in</.button>
+    </:actions>
+  </.simple_form>
+
+  <p class="mt-4 text-sm text-zinc-600">
+    Don't have an account?
+    <.link href={~p"/signup"} class="font-semibold text-zinc-900 hover:underline">
+      Sign up
+    </.link>
+  </p>
+</div>

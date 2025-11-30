@@ -1,12 +1,34 @@
 <nav class="border-b border-zinc-700 px-4 py-3">
-  <ul class="flex gap-6">
-    <li>
-      <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets", class: "text-zinc-300 hover:text-white transition" %>
-    </li>
-    <li>
-      <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs", class: "text-zinc-300 hover:text-white transition" %>
-    </li>
-  </ul>
+  <div class="flex justify-between items-center">
+    <ul class="flex gap-6">
+      <li>
+        <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets", class: "text-zinc-300 hover:text-white transition" %>
+      </li>
+      <li>
+        <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs", class: "text-zinc-300 hover:text-white transition" %>
+      </li>
+    </ul>
+    <ul class="flex gap-4 items-center">
+      <%= if @current_user do %>
+        <li class="text-zinc-400 text-sm">
+          <%= @current_user.username %>
+          <%= if @current_user.role == "admin" do %>
+            <span class="text-xs text-amber-500">(admin)</span>
+          <% end %>
+        </li>
+        <li>
+          <%= Phoenix.HTML.Link.link "Log out", to: ~p"/logout", method: :delete, class: "text-zinc-300 hover:text-white transition text-sm" %>
+        </li>
+      <% else %>
+        <li>
+          <%= Phoenix.HTML.Link.link "Log in", to: ~p"/login", class: "text-zinc-300 hover:text-white transition text-sm" %>
+        </li>
+        <li>
+          <%= Phoenix.HTML.Link.link "Sign up", to: ~p"/signup", class: "text-zinc-300 hover:text-white transition text-sm" %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
 </nav>
 
 <main class="px-4 py-5 sm:px-6 lg:px-8">
