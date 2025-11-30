@@ -16,3 +16,21 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+
+BandcampScraper.ScrapePersister.persist_sets()
+
+# Local setup
+
+## Create the db
+
+`mix ecto.create`
+`mix ecto.load`
+
+`iex -S mix`
+
+`BandcampScraper.ScrapePersister.persist_sets()`
+
+## Migrations
+
+`mix ecto.migrate`
+`mix ecto.dump`
