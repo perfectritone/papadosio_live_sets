@@ -15,6 +15,7 @@ defmodule BandcampScraper.Music.VariantExtractor do
   - Intros: Intro at end
   - Covers: (Artist Name) for known artists
   - Remixes: - (Name Remix)
+  - Psy: Psypoly, Psipolygons -> Polygons
   """
 
   alias BandcampScraper.Repo
@@ -94,9 +95,6 @@ defmodule BandcampScraper.Music.VariantExtractor do
 
     # Numbered prefix: 1. Song Name
     {title, variants} = extract_pattern(title, variants, ~r/^(\d+)\.\s+/, "sequence", fn m -> "##{m}" end)
-
-    # Starred (notable version): Song*
-    {title, variants} = extract_pattern(title, variants, ~r/\*$/, "notable", fn _ -> "*" end)
 
     # Psy prefix (Psypoly, Psipolygons -> Polygons with Psy variant)
     {title, variants} = extract_psy_prefix(title, variants)
