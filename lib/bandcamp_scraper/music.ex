@@ -379,7 +379,7 @@ defmodule BandcampScraper.Music do
   def get_set_song_with_associations!(id) do
     SetSong
     |> where([ss], ss.id == ^id)
-    |> preload([:set, :song])
+    |> preload([:set, :song, :variants])
     |> Repo.one!()
   end
 

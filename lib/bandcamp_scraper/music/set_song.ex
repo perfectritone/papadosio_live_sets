@@ -14,6 +14,7 @@ defmodule BandcampScraper.Music.SetSong do
     field :duration, :integer
     belongs_to :set, BandcampScraper.Music.Set
     belongs_to :song, BandcampScraper.Music.Song
+    many_to_many :variants, BandcampScraper.Music.Variant, join_through: "set_song_variants"
 
     timestamps(type: :utc_datetime)
   end

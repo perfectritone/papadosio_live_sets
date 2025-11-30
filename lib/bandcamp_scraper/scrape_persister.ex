@@ -1,6 +1,7 @@
 defmodule BandcampScraper.ScrapePersister do
   alias BandcampScraper.{Scraper, SetScraper}
   alias BandcampScraper.Music
+  alias BandcampScraper.Music.SongMatcher
 
   def persist_sets do
     Scraper.scrape_sets()
@@ -28,6 +29,11 @@ defmodule BandcampScraper.ScrapePersister do
   end
 
   def persist_set_song(set_song_data) do
-    {:ok, _set_song_record} = Music.create_set_song(set_song_data)
+    {:ok, set_song_record} = Music.create_set_song(set_song_data)
+
+    # Match to song and extract variants
+    SongMatcher.match_set_song(set_song_record)
+
+    set_song_record
   end
 end

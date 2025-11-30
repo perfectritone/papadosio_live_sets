@@ -21,9 +21,22 @@
   <:item title="Duration"><%= @set_song.duration |> seconds_to_human_readable %></:item>
   <:item title="Song">
     <%= if @set_song.song do %>
-      <%= Phoenix.HTML.Link.link @set_song.song.display_name, to: ~p"/songs/#{@set_song.song.id}" %>
+      <%= Phoenix.HTML.Link.link @set_song.song.display_name || @set_song.song.title, to: ~p"/songs/#{@set_song.song.id}" %>
     <% else %>
       <span class="text-zinc-500">No song</span>
+    <% end %>
+  </:item>
+  <:item title="Variants">
+    <%= if @set_song.variants && length(@set_song.variants) > 0 do %>
+      <div class="flex flex-wrap gap-2">
+        <%= for variant <- @set_song.variants do %>
+          <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{variant_color(variant.category)}"}>
+            <%= variant.name %>
+          </span>
+        <% end %>
+      </div>
+    <% else %>
+      <span class="text-zinc-500">None</span>
     <% end %>
   </:item>
 </.list>
