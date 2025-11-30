@@ -26,7 +26,8 @@ defmodule BandcampScraperWeb.SetController do
       current_season: params["season"],
       current_sort: params["sort"] || "desc",
       current_songs: current_songs,
-      in_order: params["in_order"]
+      in_order: params["in_order"],
+      current_search: params["search"]
     )
   end
 

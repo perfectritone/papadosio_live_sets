@@ -53,10 +53,17 @@ defmodule BandcampScraper.Music do
 
   defp apply_set_filters(query, params) do
     query
+    |> filter_by_search(params)
     |> filter_by_year(params)
     |> filter_by_season(params)
     |> filter_by_songs(params)
   end
+
+  defp filter_by_search(query, %{"search" => search}) when search != "" and search != nil do
+    search_term = "%#{search}%"
+    from(s in query, where: ilike(s.title, ^search_term))
+  end
+  defp filter_by_search(query, _params), do: query
 
   defp filter_by_year(query, %{"year" => year}) when year != "" and year != nil do
     year = if is_binary(year), do: String.to_integer(year), else: year
