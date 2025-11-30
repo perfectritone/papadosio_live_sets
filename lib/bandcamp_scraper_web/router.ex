@@ -51,6 +51,7 @@ defmodule BandcampScraperWeb.Router do
     resources "/songs", SongController, only: [:show]
     resources "/set_songs", SetSongController, only: [:index, :show]
     resources "/variants", VariantController, only: [:index, :show]
+    live "/stats", StatsLive, :index
   end
 
   # Authenticated user routes (can add/remove variants, edit songs)

@@ -433,15 +433,20 @@ defmodule BandcampScraper.Music do
     |> join(:left, [ss], s in assoc(ss, :set))
     |> preload(:set)
 
-    # Handle date sorting manually since it's on the joined set
-    query = case params["date_sort"] do
-      "asc" -> order_by(query, [ss, s], asc: fragment("COALESCE(?, ?)", s.date, s.release_date))
-      "desc" -> order_by(query, [ss, s], desc: fragment("COALESCE(?, ?)", s.date, s.release_date))
-      _ -> query
-    end
-
     # Remove date_sort from params before passing to Flop
     flop_params = Map.drop(params, ["date_sort"])
+
+    # Only apply manual date sorting if Flop isn't sorting (no order_by param)
+    query = if params["order_by"] do
+      query
+    else
+      case params["date_sort"] do
+        "asc" -> order_by(query, [ss, s], asc: fragment("COALESCE(?, ?)", s.date, s.release_date))
+        "desc" -> order_by(query, [ss, s], desc: fragment("COALESCE(?, ?)", s.date, s.release_date))
+        _ -> order_by(query, [ss, s], desc: fragment("COALESCE(?, ?)", s.date, s.release_date))
+      end
+    end
+
     Flop.validate_and_run(query, flop_params, for: SetSong)
   end
 
@@ -852,5 +857,53 @@ defmodule BandcampScraper.Music do
       select: %{set_song_title: ss.title, variant_name: v.name, variant_category: v.category}
     )
     |> Repo.all()
+  end
+
+  # =============================================================================
+  # Stats
+  # =============================================================================
+
+  @doc """
+  Returns songs with their play counts (number of set_songs), sorted by most played first.
+  """
+  def list_songs_with_play_counts do
+    from(s in Song,
+      left_join: ss in SetSong, on: ss.song_id == s.id,
+      group_by: s.id,
+      select: %{
+        id: s.id,
+        title: s.title,
+        display_name: s.display_name,
+        play_count: count(ss.id)
+      },
+      order_by: [desc: count(ss.id), asc: fragment("COALESCE(?, ?)", s.display_name, s.title)]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns set_songs sorted by duration with set and song preloaded.
+
+  ## Options
+
+    * `:sort` - Sort direction: "asc" or "desc" (default: "desc" for longest first)
+
+  """
+  def list_set_songs_by_duration(params \\ %{}) do
+    sort_dir = if params["sort"] == "asc", do: :asc, else: :desc
+
+    query = from(ss in SetSong,
+      join: set in assoc(ss, :set),
+      left_join: song in assoc(ss, :song),
+      where: not is_nil(ss.duration) and ss.duration > 0,
+      preload: [set: set, song: song]
+    )
+
+    query = case sort_dir do
+      :asc -> order_by(query, [ss], asc: ss.duration)
+      :desc -> order_by(query, [ss], desc: ss.duration)
+    end
+
+    Repo.all(query)
   end
 end
