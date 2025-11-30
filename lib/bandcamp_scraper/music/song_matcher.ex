@@ -29,6 +29,28 @@ defmodule BandcampScraper.Music.SongMatcher do
   }
 
   @doc """
+  Returns the canonical title for a normalized title, applying aliases.
+  """
+  def get_canonical_title(normalized_title) do
+    Map.get(@song_aliases, normalized_title, nil)
+  end
+
+  @doc """
+  Normalizes a title and applies alias resolution.
+  Returns {normalized_title, canonical_title} where canonical_title is the
+  display title to use for creating songs.
+  """
+  def normalize_with_alias(title) do
+    clean_title = VariantExtractor.clean_title(title)
+    normalized = normalize_title(clean_title)
+
+    case Map.get(@song_aliases, normalized) do
+      nil -> {normalized, clean_title}
+      canonical -> {normalize_title(canonical), canonical}
+    end
+  end
+
+  @doc """
   Finds or creates a song for a set_song based on fuzzy title matching.
 
   Returns the matched or created Song.
