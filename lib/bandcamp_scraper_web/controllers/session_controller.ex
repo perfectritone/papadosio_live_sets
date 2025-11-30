@@ -12,7 +12,6 @@ defmodule BandcampScraperWeb.SessionController do
       {:ok, user} ->
         conn
         |> put_session(:user_id, user.id)
-        |> put_flash(:info, "Welcome back, #{user.username}!")
         |> redirect(to: ~p"/")
 
       {:error, _reason} ->
