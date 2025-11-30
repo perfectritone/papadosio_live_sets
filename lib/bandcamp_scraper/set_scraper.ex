@@ -23,6 +23,7 @@ defmodule BandcampScraper.SetScraper do
 
     Floki.find(doc, "td.title-col .title")
     |> Enum.map(&extract_song/1)
+    |> Enum.reject(fn item -> item[:duration] == nil end)
   end
 
   defp extract_song(html_tree) do
@@ -55,6 +56,7 @@ defmodule BandcampScraper.SetScraper do
     |> duration_string_to_seconds
   end
 
+  def duration_string_to_seconds(""), do: nil
   def duration_string_to_seconds(raw_duration) do
     [minutes, seconds] = String.split(raw_duration, ":")
                          |> Enum.map(&String.to_integer/1)
