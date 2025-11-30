@@ -23,6 +23,7 @@ defmodule BandcampScraper.Music.SongMatcher do
     "psypolygons" => "Polygons",
     # Typo fixes
     "and this is what he though" => "...And This Is What He Thought",
+    "youre a catman" => "You're A Catman",
     # Spacing variations
     "2am" => "2 AM",
     "2 am" => "2 AM"
