@@ -1,30 +1,30 @@
-<nav class="border-b border-zinc-700 px-4 py-3">
+<nav class="bg-dosio-dark border-b border-dosio-mint/20 px-4 py-3">
   <div class="flex justify-between items-center">
     <ul class="flex gap-6">
       <li>
-        <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets", class: "text-zinc-300 hover:text-white transition" %>
+        <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets", class: "text-dosio-mint hover:text-white transition" %>
       </li>
       <li>
-        <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs", class: "text-zinc-300 hover:text-white transition" %>
+        <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs", class: "text-dosio-mint hover:text-white transition" %>
       </li>
     </ul>
     <ul class="flex gap-4 items-center">
       <%= if @current_user do %>
-        <li class="text-zinc-400 text-sm">
+        <li class="text-dosio-teal text-sm">
           <%= @current_user.username %>
           <%= if @current_user.role == "admin" do %>
-            <span class="text-xs text-amber-500">(admin)</span>
+            <span class="text-xs text-dosio-mint">(admin)</span>
           <% end %>
         </li>
         <li>
-          <%= Phoenix.HTML.Link.link "Log out", to: ~p"/logout", method: :delete, class: "text-zinc-300 hover:text-white transition text-sm" %>
+          <%= Phoenix.HTML.Link.link "Log out", to: ~p"/logout", method: :delete, class: "text-dosio-mint hover:text-white transition text-sm" %>
         </li>
       <% else %>
         <li>
-          <%= Phoenix.HTML.Link.link "Log in", to: ~p"/login", class: "text-zinc-300 hover:text-white transition text-sm" %>
+          <%= Phoenix.HTML.Link.link "Log in", to: ~p"/login", class: "text-dosio-mint hover:text-white transition text-sm" %>
         </li>
         <li>
-          <%= Phoenix.HTML.Link.link "Sign up", to: ~p"/signup", class: "text-zinc-300 hover:text-white transition text-sm" %>
+          <%= Phoenix.HTML.Link.link "Sign up", to: ~p"/signup", class: "text-dosio-mint hover:text-white transition text-sm" %>
         </li>
       <% end %>
     </ul>
@@ -32,7 +32,7 @@
 </nav>
 
 <main class="px-4 py-5 sm:px-6 lg:px-8">
-  <div class="mx-auto max-w-2xl">
+  <div class="mx-auto max-w-2xl bg-dosio-mid/80 rounded-lg p-6 backdrop-blur-sm">
     <.flash_group flash={@flash} />
     <%= @inner_content %>
   </div>

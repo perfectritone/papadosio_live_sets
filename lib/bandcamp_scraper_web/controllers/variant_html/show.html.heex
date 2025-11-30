@@ -7,7 +7,7 @@
 <.table id="set_songs" rows={@variant.set_songs} row_click={&JS.navigate(~p"/set_songs/#{&1}")}>
   <:col :let={set_song} label="Title"><%= set_song.title %></:col>
   <:col :let={set_song} label="Set">
-    <.link navigate={~p"/sets/#{set_song.set}"} class="text-zinc-600 hover:text-zinc-900">
+    <.link navigate={~p"/sets/#{set_song.set}"} class="text-dosio-mint hover:text-white">
       <%= set_song.set.title %>
     </.link>
   </:col>

@@ -15,7 +15,7 @@
     <.link navigate={~p"/sets/#{set_song.set}"}><%= set_song.set.title %></.link>
   </:col>
   <:col :let={set_song} label="">
-    <.link navigate={~p"/set_songs/#{set_song}"} class="text-zinc-600 hover:text-zinc-900">View</.link>
+    <.link navigate={~p"/set_songs/#{set_song}"} class="text-dosio-mint hover:text-white">View</.link>
   </:col>
   <:col :let={set_song} label="Bandcamp Link">
     <%= Phoenix.HTML.Link.link "Listen", to: bandcamp_url_from_schema(set_song) %>

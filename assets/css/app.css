@@ -2,8 +2,15 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Dark mode base styles */
+/* Papadosio-inspired styles */
 @layer base {
+  body {
+    background-color: #043423;
+    background-image: url('https://f4.bcbits.com/img/0036027085_130.jpg');
+    background-repeat: repeat;
+    background-attachment: fixed;
+  }
+
   input[type="text"],
   input[type="email"],
   input[type="url"],
@@ -12,7 +19,7 @@
   input[type="search"],
   textarea,
   select {
-    @apply bg-zinc-800 border-zinc-600 text-zinc-100 placeholder-zinc-400;
+    @apply bg-dosio-dark border-dosio-mint/30 text-white placeholder-dosio-teal/60;
   }
 
   input[type="text"]:focus,
@@ -23,22 +30,35 @@
   input[type="search"]:focus,
   textarea:focus,
   select:focus {
-    @apply border-zinc-500 ring-zinc-500;
+    @apply border-dosio-mint ring-dosio-mint/50;
   }
 
   a {
-    @apply text-zinc-300 hover:text-white;
+    @apply text-dosio-mint hover:text-white;
   }
 
   table {
-    @apply text-zinc-100;
+    @apply text-white;
   }
 
   th {
-    @apply text-zinc-300;
+    @apply text-dosio-teal;
   }
 
   td {
-    @apply border-zinc-700;
+    @apply border-dosio-mint/20;
+  }
+
+  /* Button styling */
+  button, .button {
+    @apply bg-dosio-mint text-dosio-dark hover:bg-white;
+  }
+
+  label {
+    @apply text-dosio-teal;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-white;
   }
 }

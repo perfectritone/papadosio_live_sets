@@ -15,6 +15,14 @@ module.exports = {
     extend: {
       colors: {
         brand: "#FD4F00",
+        // Papadosio Bandcamp colors
+        dosio: {
+          dark: "#082118",      // very dark green (nav)
+          base: "#043423",      // dark green base
+          mid: "#0D3F2D",       // dark forest green
+          mint: "#BFFCD0",      // light mint green (accent/links)
+          teal: "#8ADBD6",      // teal (secondary text)
+        }
       }
     },
   },

@@ -4,8 +4,8 @@
 
 <form method="get" action={~p"/sets"} class="mb-4 flex flex-wrap gap-4 items-end">
   <div>
-    <label for="year" class="block text-sm font-medium text-zinc-700">Year</label>
-    <select name="year" id="year" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+    <label for="year" class="block text-sm font-medium text-dosio-teal">Year</label>
+    <select name="year" id="year" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
       <option value="">All Years</option>
       <%= for year <- @years do %>
         <option value={year} selected={to_string(year) == @current_year}><%= year %></option>
@@ -14,8 +14,8 @@
   </div>
 
   <div>
-    <label for="season" class="block text-sm font-medium text-zinc-700">Season</label>
-    <select name="season" id="season" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+    <label for="season" class="block text-sm font-medium text-dosio-teal">Season</label>
+    <select name="season" id="season" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
       <option value="">All Seasons</option>
       <option value="spring" selected={@current_season == "spring"}>Spring</option>
       <option value="summer" selected={@current_season == "summer"}>Summer</option>
@@ -25,18 +25,18 @@
   </div>
 
   <div>
-    <label for="sort" class="block text-sm font-medium text-zinc-700">Sort</label>
-    <select name="sort" id="sort" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+    <label for="sort" class="block text-sm font-medium text-dosio-teal">Sort</label>
+    <select name="sort" id="sort" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
       <option value="desc" selected={@current_sort == "desc"}>Newest First</option>
       <option value="asc" selected={@current_sort == "asc"}>Oldest First</option>
     </select>
   </div>
 
   <div>
-    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-zinc-700 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-500">
+    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-dosio-dark bg-dosio-mint hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dosio-mint">
       Filter
     </button>
-    <.link href={~p"/sets"} class="ml-2 text-sm text-zinc-600 hover:text-zinc-900">Clear</.link>
+    <.link href={~p"/sets"} class="ml-2 text-sm text-dosio-teal hover:text-white">Clear</.link>
   </div>
 </form>
 
