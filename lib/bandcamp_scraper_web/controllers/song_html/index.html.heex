@@ -7,12 +7,47 @@
   </:actions>
 </.header>
 
-<Flop.Phoenix.table items={@songs} meta={@meta} path={~p"/songs"} row_click={&JS.navigate(~p"/songs/#{&1}")}>
-  <:col :let={song} label="Title" field={:title}><%= song.display_name %></:col>
+<form method="get" action={~p"/songs"} id="song-search-form" class="mb-4 flex flex-wrap gap-4 items-end">
+  <div>
+    <label for="search" class="block text-sm font-medium text-zinc-700">Search</label>
+    <input type="text" name="search" id="search" value={@current_search} placeholder="Search songs..." class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm" />
+  </div>
+
+  <div>
+    <label for="sort" class="block text-sm font-medium text-zinc-700">Sort</label>
+    <select name="sort" id="sort" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+      <option value="asc" selected={@current_sort == "asc"}>A-Z</option>
+      <option value="desc" selected={@current_sort == "desc"}>Z-A</option>
+    </select>
+  </div>
+
+  <div>
+    <.link href={~p"/songs"} class="text-sm text-zinc-600 hover:text-zinc-900">Clear</.link>
+  </div>
+</form>
+
+<script>
+  (function() {
+    const form = document.getElementById('song-search-form');
+    const searchInput = document.getElementById('search');
+    const sortSelect = document.getElementById('sort');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => form.submit(), 300);
+    });
+
+    sortSelect.addEventListener('change', () => form.submit());
+  })();
+</script>
+
+<.table id="songs" rows={@songs} row_click={&JS.navigate(~p"/songs/#{&1}")}>
+  <:col :let={song} label="Title"><%= song.display_name || song.title %></:col>
   <:action :let={song}>
     <div class="sr-only">
       <.link navigate={~p"/songs/#{song}"}>Show</.link>
     </div>
     <.link navigate={~p"/songs/#{song}/edit"}>Edit</.link>
   </:action>
-</Flop.Phoenix.table>
+</.table>

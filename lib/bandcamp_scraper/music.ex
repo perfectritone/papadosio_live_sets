@@ -230,24 +230,43 @@ defmodule BandcampScraper.Music do
   """
   def list_songs do
     Song
+    |> order_by([s], asc: fragment("COALESCE(?, ?)", s.display_name, s.title))
     |> Repo.all()
   end
 
   @doc """
-  Returns the list of songs filtered using Flop.
+  Returns the list of songs with optional sorting and search.
 
-  ## Examples
+  ## Options
 
-      iex> list_songs(%{page: 1, page_size: 10})
-      {:ok, {[%Song{}, ...], %Flop.Meta{}}}
-
-      iex> list_songs(%{invalid: params})
-      {:error, %Flop.Meta{}}
+    * `:sort` - Sort direction: "asc" (default) or "desc"
+    * `:search` - Search term to filter by title or display_name
 
   """
-  def list_songs(params) do
+  def list_songs(params) when is_map(params) do
     Song
-    |> Flop.validate_and_run(params, for: Song)
+    |> apply_song_search(params)
+    |> apply_song_sorting(params)
+    |> Repo.all()
+  end
+
+  defp apply_song_search(query, %{"search" => search}) when search != "" and search != nil do
+    search_term = "%#{search}%"
+    from(s in query,
+      where: ilike(s.title, ^search_term) or ilike(s.display_name, ^search_term)
+    )
+  end
+  defp apply_song_search(query, _params), do: query
+
+  defp apply_song_sorting(query, %{"sort" => "desc"}) do
+    from(s in query,
+      order_by: [desc: fragment("COALESCE(?, ?)", s.display_name, s.title)]
+    )
+  end
+  defp apply_song_sorting(query, _params) do
+    from(s in query,
+      order_by: [asc: fragment("COALESCE(?, ?)", s.display_name, s.title)]
+    )
   end
 
   @doc """

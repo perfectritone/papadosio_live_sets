@@ -5,13 +5,12 @@ defmodule BandcampScraperWeb.SongController do
   alias BandcampScraper.Music.Song
 
   def index(conn, params) do
-    case Music.list_songs(params) do
-      {:ok, {songs, meta}} ->
-        render(conn, :index, meta: meta, songs: songs)
-
-      {:error, meta} ->
-        render(conn, :index, meta: meta, songs: [])
-    end
+    songs = Music.list_songs(params)
+    render(conn, :index,
+      songs: songs,
+      current_search: params["search"],
+      current_sort: params["sort"] || "asc"
+    )
   end
 
   def new(conn, _params) do
