@@ -658,6 +658,7 @@ defmodule BandcampScraper.Music do
   def list_set_songs_by_set_id(set_id) do
     SetSong
     |> where([ss], ss.set_id == ^set_id)
+    |> order_by([ss], asc: ss.id)
     |> Repo.all()
   end
 
