@@ -29,6 +29,94 @@ defmodule BandcampScraper.Music do
   end
 
   @doc """
+  Returns a list of sets filtered and sorted by the given parameters.
+
+  ## Options
+
+    * `:sort` - Sort direction for effective date: "asc" or "desc" (default: "desc")
+    * `:year` - Filter by year (integer or string)
+    * `:season` - Filter by season: "winter", "spring", "summer", "fall"
+
+  Season definitions (month-based):
+    * winter: December, January, February
+    * spring: March, April, May
+    * summer: June, July, August
+    * fall: September, October, November
+
+  """
+  def list_sets(params) when is_map(params) do
+    Set
+    |> apply_set_filters(params)
+    |> apply_set_sorting(params)
+    |> Repo.all()
+  end
+
+  defp apply_set_filters(query, params) do
+    query
+    |> filter_by_year(params)
+    |> filter_by_season(params)
+  end
+
+  defp filter_by_year(query, %{"year" => year}) when year != "" and year != nil do
+    year = if is_binary(year), do: String.to_integer(year), else: year
+    from(s in query,
+      where: fragment("EXTRACT(YEAR FROM COALESCE(?, ?)) = ?", s.date, s.release_date, ^year)
+    )
+  end
+  defp filter_by_year(query, _params), do: query
+
+  defp filter_by_season(query, %{"season" => "winter"}) do
+    # Winter: Dec 21 - Mar 20 (wraps year boundary)
+    from(s in query,
+      where: fragment("(EXTRACT(MONTH FROM COALESCE(?, ?)) = 12 AND EXTRACT(DAY FROM COALESCE(?, ?)) >= 21) OR EXTRACT(MONTH FROM COALESCE(?, ?)) IN (1, 2) OR (EXTRACT(MONTH FROM COALESCE(?, ?)) = 3 AND EXTRACT(DAY FROM COALESCE(?, ?)) <= 20)", s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date)
+    )
+  end
+  defp filter_by_season(query, %{"season" => "spring"}) do
+    # Spring: Mar 21 - Jun 20
+    from(s in query,
+      where: fragment("(EXTRACT(MONTH FROM COALESCE(?, ?)) = 3 AND EXTRACT(DAY FROM COALESCE(?, ?)) >= 21) OR EXTRACT(MONTH FROM COALESCE(?, ?)) IN (4, 5) OR (EXTRACT(MONTH FROM COALESCE(?, ?)) = 6 AND EXTRACT(DAY FROM COALESCE(?, ?)) <= 20)", s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date)
+    )
+  end
+  defp filter_by_season(query, %{"season" => "summer"}) do
+    # Summer: Jun 21 - Sep 22
+    from(s in query,
+      where: fragment("(EXTRACT(MONTH FROM COALESCE(?, ?)) = 6 AND EXTRACT(DAY FROM COALESCE(?, ?)) >= 21) OR EXTRACT(MONTH FROM COALESCE(?, ?)) IN (7, 8) OR (EXTRACT(MONTH FROM COALESCE(?, ?)) = 9 AND EXTRACT(DAY FROM COALESCE(?, ?)) <= 22)", s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date)
+    )
+  end
+  defp filter_by_season(query, %{"season" => "fall"}) do
+    # Fall: Sep 23 - Dec 20
+    from(s in query,
+      where: fragment("(EXTRACT(MONTH FROM COALESCE(?, ?)) = 9 AND EXTRACT(DAY FROM COALESCE(?, ?)) >= 23) OR EXTRACT(MONTH FROM COALESCE(?, ?)) IN (10, 11) OR (EXTRACT(MONTH FROM COALESCE(?, ?)) = 12 AND EXTRACT(DAY FROM COALESCE(?, ?)) <= 20)", s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date, s.date, s.release_date)
+    )
+  end
+  defp filter_by_season(query, _params), do: query
+
+  @doc """
+  Returns a list of available years that have sets.
+  """
+  def list_set_years do
+    from(s in Set,
+      select: fragment("DISTINCT EXTRACT(YEAR FROM COALESCE(?, ?))::integer", s.date, s.release_date),
+      where: not is_nil(s.date) or not is_nil(s.release_date),
+      order_by: [desc: fragment("EXTRACT(YEAR FROM COALESCE(?, ?))::integer", s.date, s.release_date)]
+    )
+    |> Repo.all()
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp apply_set_sorting(query, %{"sort" => "asc"}) do
+    from(s in query,
+      order_by: [asc_nulls_last: fragment("COALESCE(?, ?)", s.date, s.release_date)]
+    )
+  end
+  defp apply_set_sorting(query, _params) do
+    # Default to descending (newest first)
+    from(s in query,
+      order_by: [desc_nulls_last: fragment("COALESCE(?, ?)", s.date, s.release_date)]
+    )
+  end
+
+  @doc """
   Gets a single set.
 
   Raises `Ecto.NoResultsError` if the Set does not exist.

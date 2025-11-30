@@ -4,9 +4,16 @@ defmodule BandcampScraperWeb.SetController do
   alias BandcampScraper.Music
   alias BandcampScraper.Music.Set
 
-  def index(conn, _params) do
-    sets = Music.list_sets()
-    render(conn, :index, sets: sets)
+  def index(conn, params) do
+    sets = Music.list_sets(params)
+    years = Music.list_set_years()
+    render(conn, :index,
+      sets: sets,
+      years: years,
+      current_year: params["year"],
+      current_season: params["season"],
+      current_sort: params["sort"] || "desc"
+    )
   end
 
   def new(conn, _params) do

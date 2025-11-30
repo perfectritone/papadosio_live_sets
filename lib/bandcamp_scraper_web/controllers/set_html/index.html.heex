@@ -2,6 +2,44 @@
   All Sets
 </.header>
 
+<form method="get" action={~p"/sets"} class="mb-4 flex flex-wrap gap-4 items-end">
+  <div>
+    <label for="year" class="block text-sm font-medium text-zinc-700">Year</label>
+    <select name="year" id="year" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+      <option value="">All Years</option>
+      <%= for year <- @years do %>
+        <option value={year} selected={to_string(year) == @current_year}><%= year %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div>
+    <label for="season" class="block text-sm font-medium text-zinc-700">Season</label>
+    <select name="season" id="season" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+      <option value="">All Seasons</option>
+      <option value="spring" selected={@current_season == "spring"}>Spring</option>
+      <option value="summer" selected={@current_season == "summer"}>Summer</option>
+      <option value="fall" selected={@current_season == "fall"}>Fall</option>
+      <option value="winter" selected={@current_season == "winter"}>Winter</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="sort" class="block text-sm font-medium text-zinc-700">Sort</label>
+    <select name="sort" id="sort" class="mt-1 block rounded-md border-zinc-300 shadow-sm focus:border-zinc-500 focus:ring-zinc-500 sm:text-sm">
+      <option value="desc" selected={@current_sort == "desc"}>Newest First</option>
+      <option value="asc" selected={@current_sort == "asc"}>Oldest First</option>
+    </select>
+  </div>
+
+  <div>
+    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-zinc-700 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-500">
+      Filter
+    </button>
+    <.link href={~p"/sets"} class="ml-2 text-sm text-zinc-600 hover:text-zinc-900">Clear</.link>
+  </div>
+</form>
+
 <.table id="sets" rows={@sets} row_click={&JS.navigate(~p"/sets/#{&1}")}>
   <:col :let={set} label="Title"><%= set.title %></:col>
   <:col :let={set} label="Bandcamp Link">
