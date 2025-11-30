@@ -12,13 +12,14 @@ defmodule BandcampScraperWeb.SongsLive do
     end
 
     {:ok, assign(socket,
+      page_title: "Songs",
       songs: Music.list_songs(%{}),
       search: "",
       sort: "asc",
       current_user: current_user
     )}
   rescue
-    Ecto.NoResultsError -> {:ok, assign(socket, songs: Music.list_songs(%{}), search: "", sort: "asc", current_user: nil)}
+    Ecto.NoResultsError -> {:ok, assign(socket, page_title: "Songs", songs: Music.list_songs(%{}), search: "", sort: "asc", current_user: nil)}
   end
 
   @impl true

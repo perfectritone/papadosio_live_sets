@@ -33,7 +33,7 @@ defmodule BandcampScraperWeb.SetController do
 
   def new(conn, _params) do
     changeset = Music.change_set(%Set{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, page_title: "New Set", changeset: changeset)
   end
 
   def create(conn, %{"set" => set_params}) do
@@ -44,7 +44,7 @@ defmodule BandcampScraperWeb.SetController do
         |> redirect(to: ~p"/sets/#{set}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, page_title: "New Set", changeset: changeset)
     end
   end
 
@@ -56,6 +56,7 @@ defmodule BandcampScraperWeb.SetController do
     }
 
     render(conn, :show,
+      page_title: set.title,
       set: set,
       set_songs: set_songs,
       thumbnail_attrs: thumbnail_attrs
@@ -65,7 +66,7 @@ defmodule BandcampScraperWeb.SetController do
   def edit(conn, %{"id" => id}) do
     set = Music.get_set!(id)
     changeset = Music.change_set(set)
-    render(conn, :edit, set: set, changeset: changeset)
+    render(conn, :edit, page_title: "Edit #{set.title}", set: set, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "set" => set_params}) do
@@ -78,7 +79,7 @@ defmodule BandcampScraperWeb.SetController do
         |> redirect(to: ~p"/sets/#{set}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, set: set, changeset: changeset)
+        render(conn, :edit, page_title: "Edit #{set.title}", set: set, changeset: changeset)
     end
   end
 

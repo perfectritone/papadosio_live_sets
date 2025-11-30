@@ -7,17 +7,17 @@ defmodule BandcampScraperWeb.SetSongController do
   def index(conn, params) do
     case Music.list_set_songs(params) do
       {:ok, {set_songs, _meta}} ->
-        render(conn, :index, set_songs: set_songs)
+        render(conn, :index, page_title: "Set Songs", set_songs: set_songs)
 
       {:error, _meta} ->
         set_songs = Music.list_set_songs()
-        render(conn, :index, set_songs: set_songs)
+        render(conn, :index, page_title: "Set Songs", set_songs: set_songs)
     end
   end
 
   def new(conn, _params) do
     changeset = Music.change_set_song(%SetSong{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, page_title: "New Set Song", changeset: changeset)
   end
 
   def create(conn, %{"set_song" => set_song_params}) do
@@ -28,7 +28,7 @@ defmodule BandcampScraperWeb.SetSongController do
         |> redirect(to: ~p"/set_songs/#{set_song}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, page_title: "New Set Song", changeset: changeset)
     end
   end
 
@@ -37,8 +37,10 @@ defmodule BandcampScraperWeb.SetSongController do
     all_variants = Music.list_variants()
     existing_variant_ids = Enum.map(set_song.variants, & &1.id)
     available_variants = Enum.reject(all_variants, fn v -> v.id in existing_variant_ids end)
+    song_title = set_song.song.display_name || set_song.song.title
 
     render(conn, :show,
+      page_title: song_title,
       set_song: set_song,
       available_variants: available_variants
     )
@@ -72,9 +74,10 @@ defmodule BandcampScraperWeb.SetSongController do
   end
 
   def edit(conn, %{"id" => id}) do
-    set_song = Music.get_set_song!(id)
+    set_song = Music.get_set_song_with_associations!(id)
     changeset = Music.change_set_song(set_song)
-    render(conn, :edit, set_song: set_song, changeset: changeset)
+    song_title = set_song.song.display_name || set_song.song.title
+    render(conn, :edit, page_title: "Edit #{song_title}", set_song: set_song, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "set_song" => set_song_params}) do
@@ -87,7 +90,9 @@ defmodule BandcampScraperWeb.SetSongController do
         |> redirect(to: ~p"/set_songs/#{set_song}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, set_song: set_song, changeset: changeset)
+        set_song = Music.get_set_song_with_associations!(id)
+        song_title = set_song.song.display_name || set_song.song.title
+        render(conn, :edit, page_title: "Edit #{song_title}", set_song: set_song, changeset: changeset)
     end
   end
 

@@ -6,7 +6,7 @@ defmodule BandcampScraperWeb.RegistrationController do
 
   def new(conn, _params) do
     changeset = User.changeset(%User{}, %{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, page_title: "Register", changeset: changeset)
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -18,7 +18,7 @@ defmodule BandcampScraperWeb.RegistrationController do
         |> redirect(to: ~p"/")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, page_title: "Register", changeset: changeset)
     end
   end
 end

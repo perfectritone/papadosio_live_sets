@@ -4,7 +4,7 @@ defmodule BandcampScraperWeb.SessionController do
   alias BandcampScraper.Accounts
 
   def new(conn, _params) do
-    render(conn, :new)
+    render(conn, :new, page_title: "Sign In")
   end
 
   def create(conn, %{"session" => %{"username" => username, "password" => password}}) do
@@ -17,7 +17,7 @@ defmodule BandcampScraperWeb.SessionController do
       {:error, _reason} ->
         conn
         |> put_flash(:error, "Invalid username or password")
-        |> render(:new)
+        |> render(:new, page_title: "Sign In")
     end
   end
 

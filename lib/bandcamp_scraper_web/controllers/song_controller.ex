@@ -15,7 +15,7 @@ defmodule BandcampScraperWeb.SongController do
 
   def new(conn, _params) do
     changeset = Music.change_song(%Song{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, page_title: "New Song", changeset: changeset)
   end
 
   def create(conn, %{"song" => song_params}) do
@@ -26,7 +26,7 @@ defmodule BandcampScraperWeb.SongController do
         |> redirect(to: ~p"/songs/#{song}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, page_title: "New Song", changeset: changeset)
     end
   end
 
@@ -34,10 +34,12 @@ defmodule BandcampScraperWeb.SongController do
     id = Map.fetch!(params, "id")
     song = Music.get_song!(id)
     all_songs = Music.list_songs(%{"sort" => "asc"})
+    song_title = song.display_name || song.title
 
     case Music.get_set_songs_for_song(id, params) do
       {:ok, {set_songs, meta}} ->
         render(conn, :show,
+          page_title: song_title,
           meta: meta,
           set_songs: set_songs,
           song: song,
@@ -47,6 +49,7 @@ defmodule BandcampScraperWeb.SongController do
 
       {:error, meta} ->
         render(conn, :show,
+          page_title: song_title,
           meta: meta,
           set_songs: [],
           song: song,
@@ -59,7 +62,8 @@ defmodule BandcampScraperWeb.SongController do
   def edit(conn, %{"id" => id}) do
     song = Music.get_song!(id)
     changeset = Music.change_song(song)
-    render(conn, :edit, song: song, changeset: changeset)
+    song_title = song.display_name || song.title
+    render(conn, :edit, page_title: "Edit #{song_title}", song: song, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "song" => song_params}) do
@@ -72,7 +76,8 @@ defmodule BandcampScraperWeb.SongController do
         |> redirect(to: ~p"/songs/#{song}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, song: song, changeset: changeset)
+        song_title = song.display_name || song.title
+        render(conn, :edit, page_title: "Edit #{song_title}", song: song, changeset: changeset)
     end
   end
 

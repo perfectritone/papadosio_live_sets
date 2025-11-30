@@ -15,6 +15,7 @@ defmodule BandcampScraperWeb.SetsLive do
     end
 
     {:ok, assign(socket,
+      page_title: "Sets",
       sets: [],
       years: Music.list_set_years(),
       songs: Music.list_songs(%{"sort" => "asc"}),
@@ -29,6 +30,7 @@ defmodule BandcampScraperWeb.SetsLive do
   rescue
     Ecto.NoResultsError ->
       {:ok, assign(socket,
+        page_title: "Sets",
         sets: [],
         years: Music.list_set_years(),
         songs: Music.list_songs(%{"sort" => "asc"}),
