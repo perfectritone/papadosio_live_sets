@@ -34,3 +34,37 @@ BandcampScraper.ScrapePersister.persist_sets()
 
 `mix ecto.migrate`
 `mix ecto.dump`
+
+## If the scraping stops
+Recover by running this in the console
+
+```
+  import Ecto.Query
+  alias BandcampScraper.{Repo, ScrapePersister}
+  alias BandcampScraper.Music.{Set, SetSong}
+
+  # Find sets without any set_songs
+  sets_without_songs = Repo.all(
+    from s in Set,
+    left_join: ss in SetSong, on: ss.set_id == s.id,
+    group_by: s.id,
+    having: count(ss.id) == 0,
+    select: s
+  )
+
+  IO.puts("Found #{length(sets_without_songs)} sets without songs")
+
+  # Process each set with a delay to avoid throttling
+  Enum.each(Enum.with_index(sets_without_songs), fn {set, i} ->
+    IO.puts("#{i+1}/#{length(sets_without_songs)}: Processing #{set.title}")
+    try do
+      ScrapePersister.persist_set_songs(set)
+      # 2 second delay between requests
+      Process.sleep(2000)
+    rescue
+      e -> IO.puts("  Error: #{inspect(e)}")
+    end
+  end)
+
+  IO.puts("Done!")
+```
