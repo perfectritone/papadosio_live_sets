@@ -1,11 +1,13 @@
-<ul>
-  <li>
-    <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets" %>
-  </li>
-  <li>
-    <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs" %>
-  </li>
-</ul>
+<nav class="border-b border-zinc-700 px-4 py-3">
+  <ul class="flex gap-6">
+    <li>
+      <%= Phoenix.HTML.Link.link "Sets", to: ~p"/sets", class: "text-zinc-300 hover:text-white transition" %>
+    </li>
+    <li>
+      <%= Phoenix.HTML.Link.link "Songs", to: ~p"/songs", class: "text-zinc-300 hover:text-white transition" %>
+    </li>
+  </ul>
+</nav>
 
 <main class="px-4 py-5 sm:px-6 lg:px-8">
   <div class="mx-auto max-w-2xl">
