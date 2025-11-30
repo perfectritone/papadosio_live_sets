@@ -30,9 +30,9 @@
     <%= if @set_song.variants && length(@set_song.variants) > 0 do %>
       <div class="flex flex-wrap gap-2">
         <%= for variant <- @set_song.variants do %>
-          <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{variant_color(variant.category)}"}>
+          <.link navigate={~p"/variants/#{variant}"} class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{variant_color(variant.category)} hover:opacity-80"}>
             <%= variant.name %>
-          </span>
+          </.link>
         <% end %>
       </div>
     <% else %>

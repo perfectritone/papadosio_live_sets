@@ -8,6 +8,7 @@
 </.header>
 
 <Flop.Phoenix.table items={@set_songs} meta={@meta} path={~p"/songs/#{@song}"}>
+  <:col :let={set_song} label="Date"><%= effective_date(set_song.set) %></:col>
   <:col :let={set_song} label="Set">
     <.link navigate={~p"/sets/#{set_song.set}"}><%= set_song.set.title %></.link>
   </:col>
