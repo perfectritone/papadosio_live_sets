@@ -1,21 +1,21 @@
 defmodule BandcampScraperWeb.SetController do
   use BandcampScraperWeb, :controller
 
-  alias BandcampScraper.Schemas
-  alias BandcampScraper.Schemas.Set
+  alias BandcampScraper.Music
+  alias BandcampScraper.Music.Set
 
   def index(conn, _params) do
-    sets = Schemas.list_sets()
+    sets = Music.list_sets()
     render(conn, :index, sets: sets)
   end
 
   def new(conn, _params) do
-    changeset = Schemas.change_set(%Set{})
+    changeset = Music.change_set(%Set{})
     render(conn, :new, changeset: changeset)
   end
 
   def create(conn, %{"set" => set_params}) do
-    case Schemas.create_set(set_params) do
+    case Music.create_set(set_params) do
       {:ok, set} ->
         conn
         |> put_flash(:info, "Set created successfully.")
@@ -27,8 +27,8 @@ defmodule BandcampScraperWeb.SetController do
   end
 
   def show(conn, %{"id" => id}) do
-    set = Schemas.get_set!(id)
-    set_songs = Schemas.get_set_songs_by_set_id!(id)
+    set = Music.get_set!(id)
+    set_songs = Music.list_set_songs_by_set_id(id)
     thumbnail_attrs = %{
       src: set.thumbnail
     }
@@ -41,15 +41,15 @@ defmodule BandcampScraperWeb.SetController do
   end
 
   def edit(conn, %{"id" => id}) do
-    set = Schemas.get_set!(id)
-    changeset = Schemas.change_set(set)
+    set = Music.get_set!(id)
+    changeset = Music.change_set(set)
     render(conn, :edit, set: set, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "set" => set_params}) do
-    set = Schemas.get_set!(id)
+    set = Music.get_set!(id)
 
-    case Schemas.update_set(set, set_params) do
+    case Music.update_set(set, set_params) do
       {:ok, set} ->
         conn
         |> put_flash(:info, "Set updated successfully.")
@@ -61,8 +61,8 @@ defmodule BandcampScraperWeb.SetController do
   end
 
   def delete(conn, %{"id" => id}) do
-    set = Schemas.get_set!(id)
-    {:ok, _set} = Schemas.delete_set(set)
+    set = Music.get_set!(id)
+    {:ok, _set} = Music.delete_set(set)
 
     conn
     |> put_flash(:info, "Set deleted successfully.")

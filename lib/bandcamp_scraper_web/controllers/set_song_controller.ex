@@ -1,21 +1,27 @@
 defmodule BandcampScraperWeb.SetSongController do
   use BandcampScraperWeb, :controller
 
-  alias BandcampScraper.Schemas
-  alias BandcampScraper.Schemas.SetSong
+  alias BandcampScraper.Music
+  alias BandcampScraper.Music.SetSong
 
   def index(conn, params) do
-    set_songs = Schemas.list_set_songs(params)
-    render(conn, :index, set_songs: set_songs)
+    case Music.list_set_songs(params) do
+      {:ok, {set_songs, _meta}} ->
+        render(conn, :index, set_songs: set_songs)
+
+      {:error, _meta} ->
+        set_songs = Music.list_set_songs()
+        render(conn, :index, set_songs: set_songs)
+    end
   end
 
   def new(conn, _params) do
-    changeset = Schemas.change_set_song(%SetSong{})
+    changeset = Music.change_set_song(%SetSong{})
     render(conn, :new, changeset: changeset)
   end
 
   def create(conn, %{"set_song" => set_song_params}) do
-    case Schemas.create_set_song(set_song_params) do
+    case Music.create_set_song(set_song_params) do
       {:ok, set_song} ->
         conn
         |> put_flash(:info, "Set song created successfully.")
@@ -27,7 +33,7 @@ defmodule BandcampScraperWeb.SetSongController do
   end
 
   def show(conn, %{"id" => id}) do
-    set_song = Schemas.get_set_song_with_set_and_song!(id)
+    set_song = Music.get_set_song_with_associations!(id)
 
     render(conn, :show,
       set_song: set_song
@@ -35,15 +41,15 @@ defmodule BandcampScraperWeb.SetSongController do
   end
 
   def edit(conn, %{"id" => id}) do
-    set_song = Schemas.get_set_song!(id)
-    changeset = Schemas.change_set_song(set_song)
+    set_song = Music.get_set_song!(id)
+    changeset = Music.change_set_song(set_song)
     render(conn, :edit, set_song: set_song, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "set_song" => set_song_params}) do
-    set_song = Schemas.get_set_song!(id)
+    set_song = Music.get_set_song!(id)
 
-    case Schemas.update_set_song(set_song, set_song_params) do
+    case Music.update_set_song(set_song, set_song_params) do
       {:ok, set_song} ->
         conn
         |> put_flash(:info, "Set song updated successfully.")
@@ -55,8 +61,8 @@ defmodule BandcampScraperWeb.SetSongController do
   end
 
   def delete(conn, %{"id" => id}) do
-    set_song = Schemas.get_set_song!(id)
-    {:ok, _set_song} = Schemas.delete_set_song(set_song)
+    set_song = Music.get_set_song!(id)
+    {:ok, _set_song} = Music.delete_set_song(set_song)
 
     conn
     |> put_flash(:info, "Set song deleted successfully.")

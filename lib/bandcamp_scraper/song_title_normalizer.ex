@@ -1,39 +1,40 @@
 defmodule BandcampScraper.SongTitleNormalizer do
-  alias BandcampScraper.{Repo, Schemas}
+  alias BandcampScraper.{Repo, Music}
 
   def normalize_song_titles do
-    Schemas.list_set_songs_without_songs()
+    Music.list_set_songs_without_songs()
     |> Enum.map(&associate_song/1)
   end
 
   def force_normalize_song_titles do
-    Schemas.list_set_songs()
+    Music.list_set_songs()
     |> Enum.map(&associate_song/1)
   end
 
   def generated_normalized_song_titles do
-    Schemas.list_set_songs()
-    |> Enum.map(&(normalize_song_title(&1.title)))
-    |> Enum.uniq
+    Music.list_set_songs()
+    |> Enum.map(&normalize_song_title(&1.title))
+    |> Enum.uniq()
   end
 
   def generated_normalized_song_title_count do
     generated_normalized_song_titles()
-    |> Enum.count
+    |> Enum.count()
   end
 
   def associate_song(set_song) do
     normalized_title = normalize_song_title(set_song.title)
 
-    song_record = Schemas.get_song_by_title(normalized_title)
-                  |> find_or_create_song_record(normalized_title)
+    song_record =
+      Music.get_song_by_title(normalized_title)
+      |> find_or_create_song_record(normalized_title)
 
-    Schemas.change_set_song(set_song, %{song_id: song_record.id})
-    |> Repo.update
+    Music.change_set_song(set_song, %{song_id: song_record.id})
+    |> Repo.update()
   end
 
   def find_or_create_song_record(nil, title) do
-    {:ok, song_record} = Schemas.create_song(%{title: title})
+    {:ok, song_record} = Music.create_song(%{title: title})
 
     song_record
   end
@@ -41,13 +42,13 @@ defmodule BandcampScraper.SongTitleNormalizer do
 
   def normalize_song_title(raw_title) do
     raw_title
-    |> downcase
-    |> remove_punctuation
-    |> remove_accents
-    |> remove_trailing_dates
-    |> remove_xl
-    |> remove_acoustic
-    |> trim_whitespace
+    |> downcase()
+    |> remove_punctuation()
+    |> remove_accents()
+    |> remove_trailing_dates()
+    |> remove_xl()
+    |> remove_acoustic()
+    |> trim_whitespace()
   end
 
   def downcase(string), do: String.downcase(string)

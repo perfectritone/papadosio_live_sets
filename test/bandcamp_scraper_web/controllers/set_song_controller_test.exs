@@ -1,11 +1,15 @@
 defmodule BandcampScraperWeb.SetSongControllerTest do
   use BandcampScraperWeb.ConnCase
 
-  import BandcampScraper.SchemasFixtures
+  import BandcampScraper.MusicFixtures
 
-  @create_attrs %{title: "some title", urn: "some urn", duration: 42}
   @update_attrs %{title: "some updated title", urn: "some updated urn", duration: 43}
   @invalid_attrs %{title: nil, urn: nil, duration: nil}
+
+  defp create_attrs do
+    set = set_fixture()
+    %{title: "some title", urn: "some urn", duration: 42, set_id: set.id}
+  end
 
   describe "index" do
     test "lists all set_songs", %{conn: conn} do
@@ -23,13 +27,13 @@ defmodule BandcampScraperWeb.SetSongControllerTest do
 
   describe "create set_song" do
     test "redirects to show when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/set_songs", set_song: @create_attrs)
+      conn = post(conn, ~p"/set_songs", set_song: create_attrs())
 
       assert %{id: id} = redirected_params(conn)
       assert redirected_to(conn) == ~p"/set_songs/#{id}"
 
       conn = get(conn, ~p"/set_songs/#{id}")
-      assert html_response(conn, 200) =~ "Set song #{id}"
+      assert html_response(conn, 200) =~ "some title"
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

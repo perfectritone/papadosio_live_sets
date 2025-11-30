@@ -1,7 +1,7 @@
 defmodule BandcampScraperWeb.SetControllerTest do
   use BandcampScraperWeb.ConnCase
 
-  import BandcampScraper.SchemasFixtures
+  import BandcampScraper.MusicFixtures
 
   @create_attrs %{date: ~D[2023-11-07], title: "some title", thumbnail: "some thumbnail", urn: "some urn", release_date: ~D[2023-11-07]}
   @update_attrs %{date: ~D[2023-11-08], title: "some updated title", thumbnail: "some updated thumbnail", urn: "some updated urn", release_date: ~D[2023-11-08]}
@@ -10,7 +10,7 @@ defmodule BandcampScraperWeb.SetControllerTest do
   describe "index" do
     test "lists all sets", %{conn: conn} do
       conn = get(conn, ~p"/sets")
-      assert html_response(conn, 200) =~ "Listing Sets"
+      assert html_response(conn, 200) =~ "All Sets"
     end
   end
 
@@ -29,7 +29,7 @@ defmodule BandcampScraperWeb.SetControllerTest do
       assert redirected_to(conn) == ~p"/sets/#{id}"
 
       conn = get(conn, ~p"/sets/#{id}")
-      assert html_response(conn, 200) =~ "Set #{id}"
+      assert html_response(conn, 200) =~ "some title"
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

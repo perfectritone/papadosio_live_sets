@@ -1,14 +1,18 @@
-defmodule BandcampScraper.Schemas do
+defmodule BandcampScraper.Music do
   @moduledoc """
-  The Schemas context.
+  The Music context - handles all database operations for sets, songs, and set_songs.
   """
 
   import Ecto.Query, warn: false
   alias BandcampScraper.Repo
 
-  alias BandcampScraper.Schemas.Set
-  alias BandcampScraper.Schemas.SetSong
-  alias BandcampScraper.Schemas.Song
+  alias BandcampScraper.Music.Set
+  alias BandcampScraper.Music.SetSong
+  alias BandcampScraper.Music.Song
+
+  # =============================================================================
+  # Sets
+  # =============================================================================
 
   @doc """
   Returns the list of sets.
@@ -20,7 +24,8 @@ defmodule BandcampScraper.Schemas do
 
   """
   def list_sets do
-    Repo.all(Set)
+    Set
+    |> Repo.all()
   end
 
   @doc """
@@ -39,6 +44,20 @@ defmodule BandcampScraper.Schemas do
   """
   def get_set!(id), do: Repo.get!(Set, id)
 
+  @doc """
+  Gets a single set by title.
+
+  Returns `nil` if no set with that title exists.
+
+  ## Examples
+
+      iex> get_set_by_title("My Set")
+      %Set{}
+
+      iex> get_set_by_title("Nonexistent")
+      nil
+
+  """
   def get_set_by_title(title) do
     Repo.get_by(Set, title: title)
   end
@@ -108,6 +127,10 @@ defmodule BandcampScraper.Schemas do
     Set.changeset(set, attrs)
   end
 
+  # =============================================================================
+  # Songs
+  # =============================================================================
+
   @doc """
   Returns the list of songs.
 
@@ -118,7 +141,8 @@ defmodule BandcampScraper.Schemas do
 
   """
   def list_songs do
-    Repo.all(Song)
+    Song
+    |> Repo.all()
   end
 
   @doc """
@@ -126,8 +150,11 @@ defmodule BandcampScraper.Schemas do
 
   ## Examples
 
-      iex> list_songs(%{flop: params, ...)
-      [%Song{}, ...]
+      iex> list_songs(%{page: 1, page_size: 10})
+      {:ok, {[%Song{}, ...], %Flop.Meta{}}}
+
+      iex> list_songs(%{invalid: params})
+      {:error, %Flop.Meta{}}
 
   """
   def list_songs(params) do
@@ -151,22 +178,38 @@ defmodule BandcampScraper.Schemas do
   """
   def get_song!(id), do: Repo.get!(Song, id)
 
+  @doc """
+  Gets a single song by title.
+
+  Returns `nil` if no song with that title exists.
+  """
   def get_song_by_title(title), do: Repo.get_by(Song, title: title)
 
-  def get_set_songs_for_song!(id) do
-    Repo.all(from song in Song,
-      where: song.id == ^id,
-      join: set_song in assoc(song, :set_songs),
-      join: set in assoc(set_song, :set),
-      preload: [set_songs: {set_song, set: set}]
-    ) |> List.first
+  @doc """
+  Gets a song with its set_songs preloaded.
+
+  Raises `Ecto.NoResultsError` if the Song does not exist.
+  """
+  def get_song_with_set_songs!(id) do
+    Song
+    |> where([s], s.id == ^id)
+    |> preload(set_songs: :set)
+    |> Repo.one!()
   end
 
-  def get_set_songs_for_song!(id, params) do
+  @doc """
+  Gets set_songs for a song with Flop pagination.
+
+  ## Examples
+
+      iex> get_set_songs_for_song(123, %{page: 1})
+      {:ok, {[%SetSong{}, ...], %Flop.Meta{}}}
+
+  """
+  def get_set_songs_for_song(id, params) do
     SetSong
-    |> where([set_song], set_song.song_id == ^id)
-    |> join(:left, [set_song], set in assoc(set_song, :set), as: :set)
-    |> preload([:set])
+    |> where([ss], ss.song_id == ^id)
+    |> preload(:set)
     |> Flop.validate_and_run(params, for: SetSong)
   end
 
@@ -222,9 +265,22 @@ defmodule BandcampScraper.Schemas do
     Repo.delete(song)
   end
 
+  @doc """
+  Resets all songs - removes song associations from set_songs and deletes all songs.
+  Uses a transaction to ensure atomicity.
+
+  ## Examples
+
+      iex> reset_songs()
+      {:ok, %{update_set_songs: {count, nil}, delete_songs: {count, nil}}}
+
+  """
   def reset_songs do
-    Repo.update_all(SetSong, set: [song_id: nil])
-    Repo.delete_all(Song)
+    Repo.transaction(fn ->
+      {updated, _} = Repo.update_all(SetSong, set: [song_id: nil])
+      {deleted, _} = Repo.delete_all(Song)
+      %{update_set_songs: updated, delete_songs: deleted}
+    end)
   end
 
   @doc """
@@ -240,6 +296,10 @@ defmodule BandcampScraper.Schemas do
     Song.changeset(song, attrs)
   end
 
+  # =============================================================================
+  # SetSongs
+  # =============================================================================
+
   @doc """
   Returns the list of set_songs.
 
@@ -250,7 +310,8 @@ defmodule BandcampScraper.Schemas do
 
   """
   def list_set_songs do
-    Repo.all(SetSong)
+    SetSong
+    |> Repo.all()
   end
 
   @doc """
@@ -258,29 +319,37 @@ defmodule BandcampScraper.Schemas do
 
   ## Examples
 
-      iex> list_set_songs(%{flop: param, ...})
-      [%SetSong{}, ...]
+      iex> list_set_songs(%{page: 1, page_size: 10})
+      {:ok, {[%SetSong{}, ...], %Flop.Meta{}}}
+
+      iex> list_set_songs(%{invalid: params})
+      {:error, %Flop.Meta{}}
 
   """
   def list_set_songs(params) do
-    {:ok, {flop, _meta}} = Flop.validate_and_run(SetSong, params, for: SetSong)
-
-    flop
+    SetSong
+    |> Flop.validate_and_run(params, for: SetSong)
   end
 
-  def list_set_songs_without_songs do
-    q = from(
-      ss in SetSong,
-      where: is_nil(ss.song_id)
-    )
+  @doc """
+  Returns set_songs that don't have an associated song.
 
-    Repo.all(q)
+  ## Examples
+
+      iex> list_set_songs_without_songs()
+      [%SetSong{}, ...]
+
+  """
+  def list_set_songs_without_songs do
+    SetSong
+    |> where([ss], is_nil(ss.song_id))
+    |> Repo.all()
   end
 
   @doc """
   Gets a single set_song.
 
-  Raises `Ecto.NoResultsError` if the Set song does not exist.
+  Raises `Ecto.NoResultsError` if the SetSong does not exist.
 
   ## Examples
 
@@ -293,37 +362,55 @@ defmodule BandcampScraper.Schemas do
   """
   def get_set_song!(id), do: Repo.get!(SetSong, id)
 
-  def get_set_song_with_set_and_song!(id) do
-    Repo.one!(from set_song in SetSong,
-      where: set_song.id == ^id,
-      left_join: song in assoc(set_song, :song),
-      left_join: set in assoc(set_song, :set),
-      preload: [:song, :set]
-    )
-  end
-
   @doc """
-  Gets all set_songs from a set.
+  Gets a single set_song with set and song preloaded.
 
-  Raises `Ecto.NoResultsError` if the Set does not exist.
+  Raises `Ecto.NoResultsError` if the SetSong does not exist.
 
   ## Examples
 
-      iex> get_set_songs_by_set(123)
-      [%SetSong{}, ...]
+      iex> get_set_song_with_associations!(123)
+      %SetSong{set: %Set{}, song: %Song{}}
 
-      iex> get_set_songs_by_set(456)
+      iex> get_set_song_with_associations!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_set_songs_by_set_id!(set_id) do
-    q = SetSong |> where(set_id: ^set_id)
-    Repo.all(q)
+  def get_set_song_with_associations!(id) do
+    SetSong
+    |> where([ss], ss.id == ^id)
+    |> preload([:set, :song])
+    |> Repo.one!()
   end
 
-  def get_set_songs_by_song_id!(song_id) do
-    q = SetSong |> where(song_id: ^song_id)
-    Repo.all(q)
+  @doc """
+  Gets all set_songs for a set.
+
+  ## Examples
+
+      iex> list_set_songs_by_set_id(123)
+      [%SetSong{}, ...]
+
+  """
+  def list_set_songs_by_set_id(set_id) do
+    SetSong
+    |> where([ss], ss.set_id == ^set_id)
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets all set_songs for a song.
+
+  ## Examples
+
+      iex> list_set_songs_by_song_id(123)
+      [%SetSong{}, ...]
+
+  """
+  def list_set_songs_by_song_id(song_id) do
+    SetSong
+    |> where([ss], ss.song_id == ^song_id)
+    |> Repo.all()
   end
 
   @doc """

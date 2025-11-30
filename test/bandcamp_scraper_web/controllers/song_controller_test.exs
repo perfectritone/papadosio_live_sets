@@ -1,7 +1,7 @@
 defmodule BandcampScraperWeb.SongControllerTest do
   use BandcampScraperWeb.ConnCase
 
-  import BandcampScraper.SchemasFixtures
+  import BandcampScraper.MusicFixtures
 
   @create_attrs %{title: "some title"}
   @update_attrs %{title: "some updated title"}
@@ -10,7 +10,7 @@ defmodule BandcampScraperWeb.SongControllerTest do
   describe "index" do
     test "lists all songs", %{conn: conn} do
       conn = get(conn, ~p"/songs")
-      assert html_response(conn, 200) =~ "Listing Songs"
+      assert html_response(conn, 200) =~ "All Songs"
     end
   end
 
@@ -29,7 +29,7 @@ defmodule BandcampScraperWeb.SongControllerTest do
       assert redirected_to(conn) == ~p"/songs/#{id}"
 
       conn = get(conn, ~p"/songs/#{id}")
-      assert html_response(conn, 200) =~ "Song #{id}"
+      assert html_response(conn, 200) =~ "some title"
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

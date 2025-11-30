@@ -1,5 +1,5 @@
 <.header>
-  <%= @song.display_name %>
+  <%= @song.display_name || @song.title %>
   <:actions>
     <.link href={~p"/songs/#{@song}/edit"}>
       <.button>Edit song</.button>

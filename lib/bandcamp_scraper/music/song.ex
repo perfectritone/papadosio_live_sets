@@ -1,4 +1,4 @@
-defmodule BandcampScraper.Schemas.Song do
+defmodule BandcampScraper.Music.Song do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -12,7 +12,7 @@ defmodule BandcampScraper.Schemas.Song do
     field :title, :string
     field :release_id, :id
     field :display_name, :string
-    has_many :set_songs, BandcampScraper.Schemas.SetSong
+    has_many :set_songs, BandcampScraper.Music.SetSong
 
     timestamps(type: :utc_datetime)
   end

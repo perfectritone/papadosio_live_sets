@@ -1,6 +1,6 @@
 defmodule BandcampScraper.ScrapePersister do
   alias BandcampScraper.{Scraper, SetScraper}
-  alias BandcampScraper.Schemas
+  alias BandcampScraper.Music
 
   def persist_sets do
     Scraper.scrape_sets()
@@ -8,12 +8,12 @@ defmodule BandcampScraper.ScrapePersister do
   end
 
   def persist_set(set_data) do
-    Schemas.get_set_by_title(set_data.title)
+    Music.get_set_by_title(set_data.title)
     |> create_set_unless_exists(set_data)
   end
 
   def create_set_unless_exists(nil, set_data) do
-    {:ok, set_record} = Schemas.create_set(set_data)
+    {:ok, set_record} = Music.create_set(set_data)
 
     persist_set_songs(set_record)
 
@@ -28,6 +28,6 @@ defmodule BandcampScraper.ScrapePersister do
   end
 
   def persist_set_song(set_song_data) do
-    {:ok, _set_song_record} = Schemas.create_set_song(set_song_data)
+    {:ok, _set_song_record} = Music.create_set_song(set_song_data)
   end
 end
