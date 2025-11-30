@@ -109,7 +109,8 @@ defmodule BandcampScraper.Music.VariantExtractor do
     "psypoly" => "Polygons",
     "psipoly" => "Polygons",
     "psipolygons" => "Polygons",
-    "psypolygons" => "Polygons"
+    "psypolygons" => "Polygons",
+    "(psy)polygons" => "Polygons"
   }
 
   defp extract_psy_prefix(title, variants) do
