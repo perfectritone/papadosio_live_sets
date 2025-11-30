@@ -128,18 +128,30 @@ defmodule BandcampScraper.Music do
   defp filter_by_songs(query, _params), do: query
 
   # Filter sets containing ALL specified songs (any order)
+  # Supports duplicate songs - e.g., selecting the same song twice finds sets where it appears 2+ times
   defp filter_contains_all_songs(query, song_ids) do
-    # Build a query that requires all songs to be present
-    # Each song_id must have a matching set_song in the set
-    count = length(song_ids)
+    # Count required occurrences of each song
+    song_counts = Enum.frequencies(song_ids)
+
+    # Convert to list of {song_id, required_count} for the query
+    # We use a CTE approach: for each unique song, check it appears enough times
+    unique_song_ids = Map.keys(song_counts)
+    required_counts = Map.values(song_counts)
+    unique_count = length(unique_song_ids)
 
     from(s in query,
       where: s.id in fragment("""
-        SELECT ss.set_id FROM set_songs ss
-        WHERE ss.song_id = ANY(?)
-        GROUP BY ss.set_id
-        HAVING COUNT(DISTINCT ss.song_id) = ?
-        """, ^song_ids, ^count)
+        SELECT set_id FROM (
+          SELECT ss.set_id, ss.song_id, COUNT(*) as cnt
+          FROM set_songs ss
+          WHERE ss.song_id = ANY(?)
+          GROUP BY ss.set_id, ss.song_id
+        ) counts
+        INNER JOIN unnest(?::int[], ?::int[]) AS required(song_id, min_count)
+          ON counts.song_id = required.song_id AND counts.cnt >= required.min_count
+        GROUP BY set_id
+        HAVING COUNT(*) = ?
+        """, ^unique_song_ids, ^unique_song_ids, ^required_counts, ^unique_count)
     )
   end
 
