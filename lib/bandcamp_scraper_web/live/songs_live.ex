@@ -81,14 +81,13 @@ defmodule BandcampScraperWeb.SongsLive do
       </div>
     </form>
 
-    <.table id="songs" rows={@songs} row_click={fn song -> JS.navigate(~p"/songs/#{song}") end}>
-      <:col :let={song} label="Title"><%= song.display_name || song.title %></:col>
+    <.table id="songs" rows={@songs}>
+      <:col :let={song} label="Title">
+        <.link href={~p"/songs/#{song}"} class="hover:text-dosio-mint"><%= song.display_name || song.title %></.link>
+      </:col>
       <:action :let={song}>
-        <div class="sr-only">
-          <.link navigate={~p"/songs/#{song}"}>Show</.link>
-        </div>
         <%= if @current_user && @current_user.role == "admin" do %>
-          <.link navigate={~p"/songs/#{song}/edit"}>Edit</.link>
+          <.link href={~p"/songs/#{song}/edit"}>Edit</.link>
         <% end %>
       </:action>
     </.table>

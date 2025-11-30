@@ -117,13 +117,6 @@ defmodule BandcampScraperWeb.SetsLive do
     ~H"""
     <.header>
       All Sets
-      <:actions>
-        <%= if @current_user && @current_user.role == "admin" do %>
-          <.link href={~p"/sets/new"}>
-            <.button>New Set</.button>
-          </.link>
-        <% end %>
-      </:actions>
     </.header>
 
     <form phx-change="filter" phx-submit="filter" class="mb-4 space-y-4" id="set-filter-form">
@@ -219,18 +212,17 @@ defmodule BandcampScraperWeb.SetsLive do
       </div>
     </form>
 
-    <.table id="sets" rows={@sets} row_click={fn set -> JS.navigate(~p"/sets/#{set}") end}>
-      <:col :let={set} label="Title"><%= set.title %></:col>
+    <.table id="sets" rows={@sets}>
+      <:col :let={set} label="Title">
+        <.link href={~p"/sets/#{set}"} class="hover:text-dosio-mint"><%= set.title %></.link>
+      </:col>
       <:col :let={set} label="Bandcamp Link">
         <.link href={bandcamp_url_from_schema(set)} target="_blank" class="text-dosio-mint hover:text-white">Listen</.link>
       </:col>
       <:col :let={set} label="Date"><%= effective_date(set) %></:col>
       <:action :let={set}>
-        <div class="sr-only">
-          <.link navigate={~p"/sets/#{set}"}>Show</.link>
-        </div>
         <%= if @current_user && @current_user.role == "admin" do %>
-          <.link navigate={~p"/sets/#{set}/edit"}>Edit</.link>
+          <.link href={~p"/sets/#{set}/edit"}>Edit</.link>
         <% end %>
       </:action>
     </.table>
