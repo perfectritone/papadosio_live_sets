@@ -616,4 +616,63 @@ defmodule BandcampScraper.Music do
     |> preload(set_songs: :set)
     |> Repo.one!()
   end
+
+  @doc """
+  Gets or creates a variant by name.
+  """
+  def get_or_create_variant(name, category \\ "other") do
+    case Repo.get_by(Variant, name: name) do
+      nil ->
+        {:ok, variant} =
+          %Variant{}
+          |> Variant.changeset(%{name: name, category: category})
+          |> Repo.insert()
+        variant
+
+      variant ->
+        variant
+    end
+  end
+
+  @doc """
+  Adds a variant to a set_song. Set manual: true for manually added variants.
+  """
+  def add_variant_to_set_song(set_song_id, variant_id, manual \\ false) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    Repo.insert_all(
+      "set_song_variants",
+      [%{
+        set_song_id: set_song_id,
+        variant_id: variant_id,
+        manual: manual,
+        inserted_at: now,
+        updated_at: now
+      }],
+      on_conflict: :nothing
+    )
+  end
+
+  @doc """
+  Removes a variant from a set_song.
+  """
+  def remove_variant_from_set_song(set_song_id, variant_id) do
+    from(sv in "set_song_variants",
+      where: sv.set_song_id == ^set_song_id and sv.variant_id == ^variant_id
+    )
+    |> Repo.delete_all()
+  end
+
+  @doc """
+  Returns all manually added variant associations for seeding.
+  """
+  def list_manual_variant_associations do
+    from(sv in "set_song_variants",
+      where: sv.manual == true,
+      join: ss in SetSong, on: ss.id == sv.set_song_id,
+      join: v in Variant, on: v.id == sv.variant_id,
+      select: %{set_song_title: ss.title, variant_name: v.name, variant_category: v.category}
+    )
+    |> Repo.all()
+  end
 end

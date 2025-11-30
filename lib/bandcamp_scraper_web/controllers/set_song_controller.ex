@@ -34,10 +34,39 @@ defmodule BandcampScraperWeb.SetSongController do
 
   def show(conn, %{"id" => id}) do
     set_song = Music.get_set_song_with_associations!(id)
+    all_variants = Music.list_variants()
+    existing_variant_ids = Enum.map(set_song.variants, & &1.id)
+    available_variants = Enum.reject(all_variants, fn v -> v.id in existing_variant_ids end)
 
     render(conn, :show,
-      set_song: set_song
+      set_song: set_song,
+      available_variants: available_variants
     )
+  end
+
+  def add_variant(conn, %{"id" => id, "variant_id" => variant_id}) do
+    Music.add_variant_to_set_song(String.to_integer(id), String.to_integer(variant_id), true)
+
+    conn
+    |> put_flash(:info, "Variant added.")
+    |> redirect(to: ~p"/set_songs/#{id}")
+  end
+
+  def add_new_variant(conn, %{"id" => id, "variant" => %{"name" => name, "category" => category}}) do
+    variant = Music.get_or_create_variant(name, category)
+    Music.add_variant_to_set_song(String.to_integer(id), variant.id, true)
+
+    conn
+    |> put_flash(:info, "Variant '#{name}' added.")
+    |> redirect(to: ~p"/set_songs/#{id}")
+  end
+
+  def remove_variant(conn, %{"id" => id, "variant_id" => variant_id}) do
+    Music.remove_variant_from_set_song(String.to_integer(id), String.to_integer(variant_id))
+
+    conn
+    |> put_flash(:info, "Variant removed.")
+    |> redirect(to: ~p"/set_songs/#{id}")
   end
 
   def edit(conn, %{"id" => id}) do

@@ -22,6 +22,9 @@ defmodule BandcampScraperWeb.Router do
     live "/songs", SongsLive, :index
     resources "/songs", SongController, except: [:index]
     resources "/set_songs", SetSongController
+    post "/set_songs/:id/add_variant", SetSongController, :add_variant
+    post "/set_songs/:id/add_new_variant", SetSongController, :add_new_variant
+    delete "/set_songs/:id/remove_variant/:variant_id", SetSongController, :remove_variant
     resources "/variants", VariantController, only: [:index, :show]
   end
 

@@ -30,9 +30,14 @@
     <%= if @set_song.variants && length(@set_song.variants) > 0 do %>
       <div class="flex flex-wrap gap-2">
         <%= for variant <- @set_song.variants do %>
-          <.link navigate={~p"/variants/#{variant}"} class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{variant_color(variant.category)} hover:opacity-80"}>
-            <%= variant.name %>
-          </.link>
+          <div class="inline-flex items-center gap-1">
+            <.link navigate={~p"/variants/#{variant}"} class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{variant_color(variant.category)} hover:opacity-80"}>
+              <%= variant.name %>
+            </.link>
+            <.link href={~p"/set_songs/#{@set_song}/remove_variant/#{variant}"} method="delete" class="text-zinc-400 hover:text-red-600 text-xs" data-confirm="Remove this variant?">
+              ×
+            </.link>
+          </div>
         <% end %>
       </div>
     <% else %>
@@ -40,3 +45,47 @@
     <% end %>
   </:item>
 </.list>
+
+<div class="mt-6 border-t pt-4">
+  <h3 class="text-sm font-medium text-zinc-700 mb-2">Add Variant</h3>
+
+  <div class="flex flex-wrap gap-4">
+    <%= if length(@available_variants) > 0 do %>
+      <form action={~p"/set_songs/#{@set_song}/add_variant"} method="post" class="flex gap-2 items-end">
+        <input type="hidden" name="_csrf_token" value={Phoenix.Controller.get_csrf_token()} />
+        <div>
+          <label for="variant_id" class="block text-xs text-zinc-500">Existing variant</label>
+          <select name="variant_id" id="variant_id" class="mt-1 block rounded-md border-zinc-300 shadow-sm text-sm">
+            <%= for variant <- @available_variants do %>
+              <option value={variant.id}><%= variant.name %></option>
+            <% end %>
+          </select>
+        </div>
+        <button type="submit" class="px-3 py-1.5 text-sm bg-zinc-700 text-white rounded hover:bg-zinc-800">Add</button>
+      </form>
+    <% end %>
+
+    <form action={~p"/set_songs/#{@set_song}/add_new_variant"} method="post" class="flex gap-2 items-end">
+      <input type="hidden" name="_csrf_token" value={Phoenix.Controller.get_csrf_token()} />
+      <div>
+        <label for="variant_name" class="block text-xs text-zinc-500">New variant name</label>
+        <input type="text" name="variant[name]" id="variant_name" required class="mt-1 block rounded-md border-zinc-300 shadow-sm text-sm" placeholder="e.g. Psy" />
+      </div>
+      <div>
+        <label for="variant_category" class="block text-xs text-zinc-500">Category</label>
+        <select name="variant[category]" id="variant_category" class="mt-1 block rounded-md border-zinc-300 shadow-sm text-sm">
+          <option value="version">version</option>
+          <option value="guest">guest</option>
+          <option value="acoustic">acoustic</option>
+          <option value="extended">extended</option>
+          <option value="cover">cover</option>
+          <option value="remix">remix</option>
+          <option value="reprise">reprise</option>
+          <option value="transition">transition</option>
+          <option value="other">other</option>
+        </select>
+      </div>
+      <button type="submit" class="px-3 py-1.5 text-sm bg-zinc-700 text-white rounded hover:bg-zinc-800">Create</button>
+    </form>
+  </div>
+</div>
