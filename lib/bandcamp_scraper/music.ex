@@ -55,6 +55,7 @@ defmodule BandcampScraper.Music do
     query
     |> filter_by_year(params)
     |> filter_by_season(params)
+    |> filter_by_songs(params)
   end
 
   defp filter_by_year(query, %{"year" => year}) when year != "" and year != nil do
@@ -90,6 +91,100 @@ defmodule BandcampScraper.Music do
     )
   end
   defp filter_by_season(query, _params), do: query
+
+  # Filter by multiple songs - supports both "any order" and "consecutive" modes
+  defp filter_by_songs(query, %{"songs" => songs} = params) when is_list(songs) do
+    # Filter out empty song selections
+    song_ids = songs
+      |> Enum.filter(&(&1 != "" and &1 != nil))
+      |> Enum.map(fn id -> if is_binary(id), do: String.to_integer(id), else: id end)
+
+    case song_ids do
+      [] -> query
+      [single_id] ->
+        # Single song - just filter sets containing it
+        from(s in query,
+          where: s.id in subquery(
+            from ss in SetSong,
+            where: ss.song_id == ^single_id,
+            select: ss.set_id
+          )
+        )
+      _ ->
+        if params["in_order"] == "true" do
+          filter_consecutive_songs(query, song_ids)
+        else
+          filter_contains_all_songs(query, song_ids)
+        end
+    end
+  end
+  defp filter_by_songs(query, _params), do: query
+
+  # Filter sets containing ALL specified songs (any order)
+  defp filter_contains_all_songs(query, song_ids) do
+    # Build a query that requires all songs to be present
+    # Each song_id must have a matching set_song in the set
+    count = length(song_ids)
+
+    from(s in query,
+      where: s.id in fragment("""
+        SELECT ss.set_id FROM set_songs ss
+        WHERE ss.song_id = ANY(?)
+        GROUP BY ss.set_id
+        HAVING COUNT(DISTINCT ss.song_id) = ?
+        """, ^song_ids, ^count)
+    )
+  end
+
+  # Filter sets with songs appearing consecutively in order
+  # Supports 2-5 songs in sequence
+  defp filter_consecutive_songs(query, [s1, s2]) do
+    from(s in query,
+      where: s.id in fragment("""
+        SELECT ss0.set_id FROM set_songs ss0
+        JOIN set_songs ss1 ON ss0.set_id = ss1.set_id AND ss1.id = ss0.id + 1
+        WHERE ss0.song_id = ? AND ss1.song_id = ?
+        """, ^s1, ^s2)
+    )
+  end
+  defp filter_consecutive_songs(query, [s1, s2, s3]) do
+    from(s in query,
+      where: s.id in fragment("""
+        SELECT ss0.set_id FROM set_songs ss0
+        JOIN set_songs ss1 ON ss0.set_id = ss1.set_id AND ss1.id = ss0.id + 1
+        JOIN set_songs ss2 ON ss0.set_id = ss2.set_id AND ss2.id = ss1.id + 1
+        WHERE ss0.song_id = ? AND ss1.song_id = ? AND ss2.song_id = ?
+        """, ^s1, ^s2, ^s3)
+    )
+  end
+  defp filter_consecutive_songs(query, [s1, s2, s3, s4]) do
+    from(s in query,
+      where: s.id in fragment("""
+        SELECT ss0.set_id FROM set_songs ss0
+        JOIN set_songs ss1 ON ss0.set_id = ss1.set_id AND ss1.id = ss0.id + 1
+        JOIN set_songs ss2 ON ss0.set_id = ss2.set_id AND ss2.id = ss1.id + 1
+        JOIN set_songs ss3 ON ss0.set_id = ss3.set_id AND ss3.id = ss2.id + 1
+        WHERE ss0.song_id = ? AND ss1.song_id = ? AND ss2.song_id = ? AND ss3.song_id = ?
+        """, ^s1, ^s2, ^s3, ^s4)
+    )
+  end
+  defp filter_consecutive_songs(query, [s1, s2, s3, s4, s5]) do
+    from(s in query,
+      where: s.id in fragment("""
+        SELECT ss0.set_id FROM set_songs ss0
+        JOIN set_songs ss1 ON ss0.set_id = ss1.set_id AND ss1.id = ss0.id + 1
+        JOIN set_songs ss2 ON ss0.set_id = ss2.set_id AND ss2.id = ss1.id + 1
+        JOIN set_songs ss3 ON ss0.set_id = ss3.set_id AND ss3.id = ss2.id + 1
+        JOIN set_songs ss4 ON ss0.set_id = ss4.set_id AND ss4.id = ss3.id + 1
+        WHERE ss0.song_id = ? AND ss1.song_id = ? AND ss2.song_id = ? AND ss3.song_id = ? AND ss4.song_id = ?
+        """, ^s1, ^s2, ^s3, ^s4, ^s5)
+    )
+  end
+  # For more than 5 songs, just match the first 5
+  defp filter_consecutive_songs(query, [s1, s2, s3, s4, s5 | _]) do
+    filter_consecutive_songs(query, [s1, s2, s3, s4, s5])
+  end
+  defp filter_consecutive_songs(query, _), do: query
 
   @doc """
   Returns a list of available years that have sets.

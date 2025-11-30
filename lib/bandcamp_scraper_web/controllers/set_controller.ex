@@ -7,12 +7,26 @@ defmodule BandcampScraperWeb.SetController do
   def index(conn, params) do
     sets = Music.list_sets(params)
     years = Music.list_set_years()
+    songs = Music.list_songs(%{"sort" => "asc"})
+
+    # Handle songs[] array - ensure at least one empty slot
+    current_songs = case params["songs"] do
+      nil -> [""]
+      list when is_list(list) ->
+        filtered = Enum.filter(list, &(&1 != ""))
+        if filtered == [], do: [""], else: filtered
+      _ -> [""]
+    end
+
     render(conn, :index,
       sets: sets,
       years: years,
+      songs: songs,
       current_year: params["year"],
       current_season: params["season"],
-      current_sort: params["sort"] || "desc"
+      current_sort: params["sort"] || "desc",
+      current_songs: current_songs,
+      in_order: params["in_order"]
     )
   end
 

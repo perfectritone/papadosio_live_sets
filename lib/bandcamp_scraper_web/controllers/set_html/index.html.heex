@@ -2,43 +2,109 @@
   All Sets
 </.header>
 
-<form method="get" action={~p"/sets"} class="mb-4 flex flex-wrap gap-4 items-end">
-  <div>
-    <label for="year" class="block text-sm font-medium text-dosio-teal">Year</label>
-    <select name="year" id="year" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
-      <option value="">All Years</option>
-      <%= for year <- @years do %>
-        <option value={year} selected={to_string(year) == @current_year}><%= year %></option>
+<form method="get" action={~p"/sets"} class="mb-4 space-y-4" id="set-filter-form">
+  <div class="flex flex-wrap gap-4 items-end">
+    <div>
+      <label for="year" class="block text-sm font-medium text-dosio-teal">Year</label>
+      <select name="year" id="year" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
+        <option value="">All Years</option>
+        <%= for year <- @years do %>
+          <option value={year} selected={to_string(year) == @current_year}><%= year %></option>
+        <% end %>
+      </select>
+    </div>
+
+    <div>
+      <label for="season" class="block text-sm font-medium text-dosio-teal">Season</label>
+      <select name="season" id="season" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
+        <option value="">All Seasons</option>
+        <option value="spring" selected={@current_season == "spring"}>Spring</option>
+        <option value="summer" selected={@current_season == "summer"}>Summer</option>
+        <option value="fall" selected={@current_season == "fall"}>Fall</option>
+        <option value="winter" selected={@current_season == "winter"}>Winter</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="sort" class="block text-sm font-medium text-dosio-teal">Sort</label>
+      <select name="sort" id="sort" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
+        <option value="desc" selected={@current_sort == "desc"}>Newest First</option>
+        <option value="asc" selected={@current_sort == "asc"}>Oldest First</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="border-t border-dosio-mint/20 pt-4">
+    <div class="flex items-center gap-4 mb-3">
+      <p class="text-sm font-medium text-dosio-teal">Song Search</p>
+      <label class="flex items-center gap-2 text-sm text-dosio-teal">
+        <input type="checkbox" name="in_order" value="true" checked={@in_order == "true"} class="rounded border-dosio-mint/30 text-dosio-mint focus:ring-dosio-mint/50" />
+        <span>In order (consecutive)</span>
+      </label>
+    </div>
+
+    <div id="song-filters" class="space-y-2">
+      <%= for {song_id, index} <- Enum.with_index(@current_songs) do %>
+        <div class="flex gap-2 items-center song-row">
+          <%= if index > 0 do %>
+            <span class="text-dosio-teal text-sm w-6"><%= if @in_order == "true", do: "→", else: "&" %></span>
+          <% else %>
+            <span class="w-6"></span>
+          <% end %>
+          <select name="songs[]" class="block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
+            <option value="">Select song</option>
+            <%= for song <- @songs do %>
+              <option value={song.id} selected={to_string(song.id) == song_id}><%= song.display_name || song.title %></option>
+            <% end %>
+          </select>
+          <%= if index > 0 do %>
+            <button type="button" onclick="this.closest('.song-row').remove()" class="text-red-400 hover:text-red-300 text-sm">✕</button>
+          <% else %>
+            <span class="w-4"></span>
+          <% end %>
+        </div>
       <% end %>
-    </select>
+    </div>
+
+    <button type="button" id="add-song" class="mt-2 text-sm text-dosio-mint hover:text-white flex items-center gap-1">
+      <span>+</span> Add song
+    </button>
   </div>
 
-  <div>
-    <label for="season" class="block text-sm font-medium text-dosio-teal">Season</label>
-    <select name="season" id="season" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
-      <option value="">All Seasons</option>
-      <option value="spring" selected={@current_season == "spring"}>Spring</option>
-      <option value="summer" selected={@current_season == "summer"}>Summer</option>
-      <option value="fall" selected={@current_season == "fall"}>Fall</option>
-      <option value="winter" selected={@current_season == "winter"}>Winter</option>
-    </select>
-  </div>
-
-  <div>
-    <label for="sort" class="block text-sm font-medium text-dosio-teal">Sort</label>
-    <select name="sort" id="sort" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
-      <option value="desc" selected={@current_sort == "desc"}>Newest First</option>
-      <option value="asc" selected={@current_sort == "asc"}>Oldest First</option>
-    </select>
-  </div>
-
-  <div>
+  <div class="flex gap-2">
     <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-dosio-dark bg-dosio-mint hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dosio-mint">
       Filter
     </button>
-    <.link href={~p"/sets"} class="ml-2 text-sm text-dosio-teal hover:text-white">Clear</.link>
+    <.link href={~p"/sets"} class="inline-flex items-center px-4 py-2 text-sm text-dosio-teal hover:text-white">Clear</.link>
   </div>
 </form>
+
+<script>
+  document.getElementById('add-song').addEventListener('click', function() {
+    const container = document.getElementById('song-filters');
+    const inOrder = document.querySelector('input[name="in_order"]').checked;
+    const symbol = inOrder ? '→' : '&';
+
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-center song-row';
+    row.innerHTML = `
+      <span class="text-dosio-teal text-sm w-6">${symbol}</span>
+      <select name="songs[]" class="block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
+        ${document.querySelector('select[name="songs[]"]').innerHTML}
+      </select>
+      <button type="button" onclick="this.closest('.song-row').remove()" class="text-red-400 hover:text-red-300 text-sm">✕</button>
+    `;
+    container.appendChild(row);
+  });
+
+  // Update symbols when checkbox changes
+  document.querySelector('input[name="in_order"]').addEventListener('change', function() {
+    const symbol = this.checked ? '→' : '&';
+    document.querySelectorAll('.song-row span:first-child').forEach((span, i) => {
+      if (i > 0) span.textContent = symbol;
+    });
+  });
+</script>
 
 <.table id="sets" rows={@sets} row_click={&JS.navigate(~p"/sets/#{&1}")}>
   <:col :let={set} label="Title"><%= set.title %></:col>
