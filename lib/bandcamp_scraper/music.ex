@@ -409,10 +409,21 @@ defmodule BandcampScraper.Music do
 
   """
   def get_set_songs_for_song(id, params) do
-    SetSong
+    query = SetSong
     |> where([ss], ss.song_id == ^id)
+    |> join(:left, [ss], s in assoc(ss, :set))
     |> preload(:set)
-    |> Flop.validate_and_run(params, for: SetSong)
+
+    # Handle date sorting manually since it's on the joined set
+    query = case params["date_sort"] do
+      "asc" -> order_by(query, [ss, s], asc: fragment("COALESCE(?, ?)", s.date, s.release_date))
+      "desc" -> order_by(query, [ss, s], desc: fragment("COALESCE(?, ?)", s.date, s.release_date))
+      _ -> query
+    end
+
+    # Remove date_sort from params before passing to Flop
+    flop_params = Map.drop(params, ["date_sort"])
+    Flop.validate_and_run(query, flop_params, for: SetSong)
   end
 
   @doc """

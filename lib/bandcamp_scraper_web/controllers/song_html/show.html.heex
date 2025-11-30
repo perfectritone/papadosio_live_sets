@@ -9,7 +9,15 @@
   </:actions>
 </.header>
 
-<Flop.Phoenix.table items={@set_songs} meta={@meta} path={~p"/songs/#{@song}"}>
+<form method="get" action={~p"/songs/#{@song}"} class="mb-4 flex items-center gap-2">
+  <label for="date_sort" class="text-sm text-dosio-teal">Sort by date:</label>
+  <select name="date_sort" id="date_sort" onchange="this.form.submit()" class="rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
+    <option value="desc" selected={@date_sort == "desc"}>Newest First</option>
+    <option value="asc" selected={@date_sort == "asc"}>Oldest First</option>
+  </select>
+</form>
+
+<Flop.Phoenix.table items={@set_songs} meta={@meta} path={~p"/songs/#{@song}?date_sort=#{@date_sort}"}>
   <:col :let={set_song} label="Date"><%= effective_date(set_song.set) %></:col>
   <:col :let={set_song} label="Set">
     <.link navigate={~p"/sets/#{set_song.set}"}><%= set_song.set.title %></.link>

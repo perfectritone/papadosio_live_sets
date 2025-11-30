@@ -37,10 +37,22 @@ defmodule BandcampScraperWeb.SongController do
 
     case Music.get_set_songs_for_song(id, params) do
       {:ok, {set_songs, meta}} ->
-        render(conn, :show, meta: meta, set_songs: set_songs, song: song, all_songs: all_songs)
+        render(conn, :show,
+          meta: meta,
+          set_songs: set_songs,
+          song: song,
+          all_songs: all_songs,
+          date_sort: params["date_sort"] || "desc"
+        )
 
       {:error, meta} ->
-        render(conn, :show, meta: meta, set_songs: [], song: song, all_songs: all_songs)
+        render(conn, :show,
+          meta: meta,
+          set_songs: [],
+          song: song,
+          all_songs: all_songs,
+          date_sort: params["date_sort"] || "desc"
+        )
     end
   end
 
