@@ -27,7 +27,7 @@ defmodule BandcampScraperWeb.Router do
   scope "/", BandcampScraperWeb do
     pipe_through :browser
 
-    get "/", SetController, :index
+    live "/", SetsLive, :index
     get "/login", SessionController, :new
     post "/login", SessionController, :create
     delete "/logout", SessionController, :delete
@@ -35,7 +35,8 @@ defmodule BandcampScraperWeb.Router do
     post "/signup", RegistrationController, :create
 
     # Read-only resources
-    resources "/sets", SetController, only: [:index, :show]
+    live "/sets", SetsLive, :index
+    resources "/sets", SetController, only: [:show]
     live "/songs", SongsLive, :index
     resources "/songs", SongController, only: [:show]
     resources "/set_songs", SetSongController, only: [:index, :show]
