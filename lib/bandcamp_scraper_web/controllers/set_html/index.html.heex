@@ -7,8 +7,7 @@
   <:col :let={set} label="Bandcamp Link">
     <%= Phoenix.HTML.Link.link "Listen", to: bandcamp_url_from_schema(set) %>
   </:col>
-  <:col :let={set} label="Date"><%= set.date %></:col>
-  <:col :let={set} label="Release date"><%= set.release_date %></:col>
+  <:col :let={set} label="Date"><%= effective_date(set) %></:col>
   <:action :let={set}>
     <div class="sr-only">
       <.link navigate={~p"/sets/#{set}"}>Show</.link>

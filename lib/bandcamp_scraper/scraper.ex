@@ -1,4 +1,6 @@
 defmodule BandcampScraper.Scraper do
+  alias BandcampScraper.Music.DateExtractor
+
   @bandcamp_domain "https://papadosio.bandcamp.com"
 
   def scrape_sets do
@@ -37,26 +39,9 @@ defmodule BandcampScraper.Scraper do
 
   def transform_client_item(client_item) do
     %{
-      title: client_item["title"],
+      title: DateExtractor.strip_zero_width(client_item["title"]),
       urn: client_item["page_url"],
       thumbnail: "https://f4.bcbits.com/img/a#{client_item["art_id"]}_2.jpg"
-      #date: parse_date_from_title(client_item["title"]),
     }
   end
-
-  # defp parse_date_from_title(title) do
-  #   Regex.run(~r/\d+.\d+.\d+/, title)
-  #   |> retrieve_date_from_formatted_string
-  # end
-
-  # defp retrieve_date_from_formatted_string(nil), do: nil
-  # defp retrieve_date_from_formatted_string(match) do
-  #   [month, day, year] =
-  #     match
-  #     |> List.first
-  #     |> String.split(".")
-  #     |> Enum.map(&String.to_integer/1)
-
-  #   Date.new(year, month, day)
-  # end
 end

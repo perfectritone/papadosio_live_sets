@@ -1,10 +1,25 @@
 defmodule BandcampScraper.SetScraper do
+  alias BandcampScraper.Music.DateExtractor
+
   @bandcamp_domain "https://papadosio.bandcamp.com"
 
+  @doc """
+  Scrapes a set page and returns songs and release date.
+
+  Returns `{songs, release_date}` where release_date is the Bandcamp upload date.
+  """
   def scrape_set(urn) do
+    html = set_url(urn) |> page_body()
+    {extract_songs(html), extract_release_date(html)}
+  end
+
+  @doc """
+  Scrapes only the songs from a set page (legacy compatibility).
+  """
+  def scrape_songs(urn) do
     set_url(urn)
     |> page_body
-    |> extract_set
+    |> extract_songs
   end
 
   defp set_url(urn) do
@@ -18,12 +33,41 @@ defmodule BandcampScraper.SetScraper do
     HTTPoison.get!(url).body
   end
 
-  defp extract_set(html) do
+  defp extract_songs(html) do
     {:ok, doc} = Floki.parse_document(html)
 
     Floki.find(doc, "td.title-col .title")
     |> Enum.map(&extract_song/1)
     |> Enum.reject(fn item -> item[:duration] == nil end)
+  end
+
+  defp extract_release_date(html) do
+    # Extract datePublished from JSON-LD script tag
+    case Regex.run(~r/"datePublished"\s*:\s*"([^"]+)"/, html) do
+      [_, date_str] -> parse_bandcamp_date(date_str)
+      nil -> nil
+    end
+  end
+
+  # Parse Bandcamp date format: "01 Jul 2025 00:10:24 GMT"
+  defp parse_bandcamp_date(date_str) do
+    case Regex.run(~r/(\d{1,2})\s+(\w+)\s+(\d{4})/, date_str) do
+      [_, day, month, year] ->
+        month_num = month_to_number(month)
+        case Date.new(String.to_integer(year), month_num, String.to_integer(day)) do
+          {:ok, date} -> date
+          _ -> nil
+        end
+      nil -> nil
+    end
+  end
+
+  defp month_to_number(month) do
+    %{
+      "Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4,
+      "May" => 5, "Jun" => 6, "Jul" => 7, "Aug" => 8,
+      "Sep" => 9, "Oct" => 10, "Nov" => 11, "Dec" => 12
+    }[month] || 1
   end
 
   defp extract_song(html_tree) do
@@ -39,6 +83,7 @@ defmodule BandcampScraper.SetScraper do
     |> Floki.find("a")
     |> Floki.find(".track-title")
     |> Floki.text
+    |> DateExtractor.strip_zero_width()
   end
 
   defp parse_urn(html_tree) do
