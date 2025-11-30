@@ -584,4 +584,36 @@ defmodule BandcampScraper.Music do
   def change_set_song(%SetSong{} = set_song, attrs \\ %{}) do
     SetSong.changeset(set_song, attrs)
   end
+
+  # =============================================================================
+  # Variants
+  # =============================================================================
+
+  alias BandcampScraper.Music.Variant
+
+  @doc """
+  Returns the list of variants ordered by name.
+  """
+  def list_variants do
+    Variant
+    |> order_by([v], v.name)
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets a single variant.
+
+  Raises `Ecto.NoResultsError` if the Variant does not exist.
+  """
+  def get_variant!(id), do: Repo.get!(Variant, id)
+
+  @doc """
+  Gets a variant with its set_songs preloaded (including set association).
+  """
+  def get_variant_with_set_songs!(id) do
+    Variant
+    |> where([v], v.id == ^id)
+    |> preload(set_songs: :set)
+    |> Repo.one!()
+  end
 end

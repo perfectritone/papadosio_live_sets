@@ -1,0 +1,16 @@
+<.header>
+  <span class={"inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium #{variant_color(@variant.category)}"}>
+    <%= @variant.name %>
+  </span>
+</.header>
+
+<.table id="set_songs" rows={@variant.set_songs} row_click={&JS.navigate(~p"/set_songs/#{&1}")}>
+  <:col :let={set_song} label="Title"><%= set_song.title %></:col>
+  <:col :let={set_song} label="Set">
+    <.link navigate={~p"/sets/#{set_song.set}"} class="text-zinc-600 hover:text-zinc-900">
+      <%= set_song.set.title %>
+    </.link>
+  </:col>
+</.table>
+
+<.back navigate={~p"/variants"}>Back to variants</.back>

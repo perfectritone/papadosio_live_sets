@@ -1,0 +1,13 @@
+<.header>
+  Variants
+</.header>
+
+<div class="mt-6 flex flex-wrap gap-3">
+  <%= for variant <- @variants do %>
+    <.link navigate={~p"/variants/#{variant}"}>
+      <span class={"inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium #{variant_color(variant.category)} hover:opacity-80 cursor-pointer"}>
+        <%= variant.name %>
+      </span>
+    </.link>
+  <% end %>
+</div>
