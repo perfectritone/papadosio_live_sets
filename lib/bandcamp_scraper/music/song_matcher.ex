@@ -22,11 +22,38 @@ defmodule BandcampScraper.Music.SongMatcher do
     "psypoly" => "Polygons",
     "psypolygons" => "Polygons",
     # Typo fixes
-    "and this is what he though" => "...And This Is What He Thought",
+    "and this is what he though" => "And This is What He Thought",
+    "and this is what he thought" => "And This is What He Thought",
     "youre a catman" => "You're A Catman",
+    "the bionic man meets his pas" => "The Bionic Man Meets His Past",
+    "if it wasnt for your" => "If It Wasn't For You",
+    "it it wasnt for you" => "If It Wasn't For You",
     # Spacing variations
     "2am" => "2 AM",
-    "2 am" => "2 AM"
+    "2 am" => "2 AM",
+    "fossilize3" => "Fossilize",
+    "phdeez" => "PH Deez",
+    # Article variations
+    "wrong nostalgia" => "The Wrong Nostalgia",
+    "lack of everything" => "The Lack of Everything",
+    # Jam variations
+    "jam 1" => "Jam",
+    "jam 2" => "Jam",
+    # Shortened titles
+    "bionic" => "The Bionic Man Meets His Past",
+    "bionic man" => "The Bionic Man Meets His Past",
+    "direction" => "Direction Song",
+    "three" => "Threes",
+    "fahrenheit fair enough" => "Fahrenheit Fair Enough (Telefon Tel Aviv)",
+    # Prefix/suffix variations
+    "e holy heck" => "Holy Heck",
+    "e tv song" => "T.V. Song",
+    "tv song" => "T.V. Song",
+    "i had the same dream" => "I Had The Same Dream",
+    "gazing the great oscillator" => "Gazing the Great Oscillator",
+    "night colors" => "Night Colors",
+    "paradigm" => "Paradigm Shift",
+    "the direction song" => "Direction Song"
   }
 
   @doc """
@@ -195,7 +222,27 @@ defmodule BandcampScraper.Music.SongMatcher do
     # Don't match if lengths are too different (>40% difference)
     length_ratio(title1, title2) >= 0.6 and
     # First word should match (prevents "1979" matching "Eye")
-    first_word_matches?(title1, title2)
+    first_word_matches?(title1, title2) and
+    # Don't match if both end with different numbers (e.g., "Part 1" vs "Part 9", "Jam 1" vs "Jam 2")
+    not has_different_trailing_numbers?(title1, title2)
+  end
+
+  defp has_different_trailing_numbers?(title1, title2) do
+    case {extract_trailing_number(title1), extract_trailing_number(title2)} do
+      {{prefix1, num1}, {prefix2, num2}} ->
+        # Both have trailing numbers - check if same prefix but different numbers
+        prefix1 == prefix2 and num1 != num2
+
+      _ ->
+        false
+    end
+  end
+
+  defp extract_trailing_number(title) do
+    case Regex.run(~r/^(.+?)\s*(\d+)$/, title) do
+      [_, prefix, num] -> {String.trim(prefix), num}
+      _ -> nil
+    end
   end
 
   defp length_ratio(s1, s2) do
