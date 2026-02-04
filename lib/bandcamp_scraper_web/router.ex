@@ -37,7 +37,7 @@ defmodule BandcampScraperWeb.Router do
   scope "/", BandcampScraperWeb do
     pipe_through :browser
 
-    live "/", SetsLive, :index
+    live "/", SongsLive, :index
     get "/login", SessionController, :new
     post "/login", SessionController, :create
     delete "/logout", SessionController, :delete
