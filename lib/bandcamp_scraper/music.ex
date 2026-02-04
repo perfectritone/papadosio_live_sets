@@ -1053,4 +1053,287 @@ defmodule BandcampScraper.Music do
 
     Repo.all(query)
   end
+
+  @doc """
+  Returns songs that have returned after the longest gaps (bustouts).
+  Shows the song, the set it returned in, and days since last played.
+  """
+  def list_bustouts do
+    sql = """
+    WITH song_appearances AS (
+      SELECT
+        ss.song_id,
+        ss.set_id,
+        COALESCE(s.date, s.release_date) as play_date,
+        LAG(COALESCE(s.date, s.release_date)) OVER (PARTITION BY ss.song_id ORDER BY COALESCE(s.date, s.release_date)) as prev_date
+      FROM set_songs ss
+      JOIN sets s ON ss.set_id = s.id
+      WHERE ss.song_id IS NOT NULL
+    )
+    SELECT sa.song_id, s.title as song_title, s.display_name as song_display_name,
+           sa.set_id, st.title as set_title, sa.play_date as set_date,
+           (sa.play_date - sa.prev_date) as gap_days
+    FROM song_appearances sa
+    JOIN songs s ON s.id = sa.song_id
+    JOIN sets st ON st.id = sa.set_id
+    WHERE sa.prev_date IS NOT NULL
+    ORDER BY gap_days DESC
+    LIMIT 100
+    """
+
+    Repo.query!(sql).rows
+    |> Enum.map(fn [song_id, song_title, song_display_name, set_id, set_title, set_date, gap_days] ->
+      %{
+        song_id: song_id,
+        song_title: song_title,
+        song_display_name: song_display_name,
+        set_id: set_id,
+        set_title: set_title,
+        set_date: set_date,
+        gap_days: gap_days
+      }
+    end)
+  end
+
+  @doc """
+  Returns songs played at the most consecutive shows.
+  """
+  def list_song_streaks do
+    sql = """
+    WITH ordered_sets AS (
+      SELECT id, COALESCE(date, release_date) as play_date,
+             ROW_NUMBER() OVER (ORDER BY COALESCE(date, release_date)) as set_num
+      FROM sets
+      WHERE COALESCE(date, release_date) IS NOT NULL
+    ),
+    song_sets AS (
+      SELECT DISTINCT ss.song_id, os.set_num, os.play_date
+      FROM set_songs ss
+      JOIN ordered_sets os ON ss.set_id = os.id
+      WHERE ss.song_id IS NOT NULL
+    ),
+    streaks AS (
+      SELECT song_id, set_num, play_date,
+             set_num - ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY set_num) as grp
+      FROM song_sets
+    ),
+    streak_lengths AS (
+      SELECT song_id, MIN(play_date) as streak_start, MAX(play_date) as streak_end, COUNT(*) as streak_length
+      FROM streaks
+      GROUP BY song_id, grp
+    ),
+    max_streaks AS (
+      SELECT song_id, streak_start, streak_end, streak_length as max_streak
+      FROM streak_lengths sl
+      WHERE streak_length = (SELECT MAX(streak_length) FROM streak_lengths WHERE song_id = sl.song_id)
+    )
+    SELECT s.id as song_id, s.title as song_title, s.display_name as song_display_name,
+           ms.max_streak as streak_length, ms.streak_start, ms.streak_end
+    FROM max_streaks ms
+    JOIN songs s ON s.id = ms.song_id
+    ORDER BY ms.max_streak DESC, s.display_name, s.title
+    LIMIT 100
+    """
+
+    Repo.query!(sql).rows
+    |> Enum.map(fn [song_id, song_title, song_display_name, streak_length, streak_start, streak_end] ->
+      %{
+        song_id: song_id,
+        song_title: song_title,
+        song_display_name: song_display_name,
+        streak_length: streak_length,
+        streak_start: streak_start,
+        streak_end: streak_end
+      }
+    end)
+  end
+
+  @doc """
+  Returns most common set openers.
+  """
+  def list_common_openers do
+    from(song in Song,
+      join: opener in fragment("""
+        SELECT ss.song_id, COUNT(*) as open_count
+        FROM set_songs ss
+        JOIN (
+          SELECT set_id, MIN(id) as first_id
+          FROM set_songs
+          GROUP BY set_id
+        ) firsts ON ss.set_id = firsts.set_id AND ss.id = firsts.first_id
+        WHERE ss.song_id IS NOT NULL
+        GROUP BY ss.song_id
+        ORDER BY open_count DESC
+        """),
+      on: opener.song_id == song.id,
+      select: %{
+        song_id: song.id,
+        song_title: song.title,
+        song_display_name: song.display_name,
+        count: opener.open_count
+      },
+      order_by: [desc: opener.open_count]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns most common set closers.
+  """
+  def list_common_closers do
+    from(song in Song,
+      join: closer in fragment("""
+        SELECT ss.song_id, COUNT(*) as close_count
+        FROM set_songs ss
+        JOIN (
+          SELECT set_id, MAX(id) as last_id
+          FROM set_songs
+          GROUP BY set_id
+        ) lasts ON ss.set_id = lasts.set_id AND ss.id = lasts.last_id
+        WHERE ss.song_id IS NOT NULL
+        GROUP BY ss.song_id
+        ORDER BY close_count DESC
+        """),
+      on: closer.song_id == song.id,
+      select: %{
+        song_id: song.id,
+        song_title: song.title,
+        song_display_name: song.display_name,
+        count: closer.close_count
+      },
+      order_by: [desc: closer.close_count]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns song pairings - songs that most frequently follow each other.
+  """
+  def list_song_pairings do
+    from(s1 in Song,
+      join: pairing in fragment("""
+        SELECT ss1.song_id as song1_id, ss2.song_id as song2_id, COUNT(*) as pair_count
+        FROM set_songs ss1
+        JOIN set_songs ss2 ON ss1.set_id = ss2.set_id AND ss2.id = ss1.id + 1
+        WHERE ss1.song_id IS NOT NULL AND ss2.song_id IS NOT NULL
+        GROUP BY ss1.song_id, ss2.song_id
+        HAVING COUNT(*) > 1
+        ORDER BY pair_count DESC
+        LIMIT 100
+        """),
+      on: pairing.song1_id == s1.id,
+      join: s2 in Song, on: s2.id == pairing.song2_id,
+      select: %{
+        song1_id: s1.id,
+        song1_title: s1.title,
+        song1_display_name: s1.display_name,
+        song2_id: s2.id,
+        song2_title: s2.title,
+        song2_display_name: s2.display_name,
+        count: pairing.pair_count
+      },
+      order_by: [desc: pairing.pair_count]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns rare songs - played only 1-3 times.
+  """
+  def list_rare_songs do
+    from(song in Song,
+      join: ss in SetSong, on: ss.song_id == song.id,
+      group_by: song.id,
+      having: count(ss.id) <= 3,
+      select: %{
+        song_id: song.id,
+        song_title: song.title,
+        song_display_name: song.display_name,
+        play_count: count(ss.id)
+      },
+      order_by: [asc: count(ss.id), asc: fragment("COALESCE(?, ?)", song.display_name, song.title)]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns sets ordered by total duration.
+  """
+  def list_longest_sets do
+    from(set in Set,
+      join: ss in SetSong, on: ss.set_id == set.id,
+      group_by: set.id,
+      select: %{
+        set_id: set.id,
+        set_title: set.title,
+        set_date: fragment("COALESCE(?, ?)", set.date, set.release_date),
+        total_duration: sum(ss.duration),
+        song_count: count(ss.id)
+      },
+      order_by: [desc: sum(ss.duration)]
+    )
+    |> Repo.all()
+    |> Enum.filter(& &1.total_duration)
+  end
+
+  @doc """
+  Returns songs that appear 3+ times in a single set (triple sandwiches).
+  """
+  def list_triple_sandwiches do
+    from(song in Song,
+      join: triple in fragment("""
+        SELECT ss.song_id, ss.set_id, COUNT(*) as appearance_count
+        FROM set_songs ss
+        WHERE ss.song_id IS NOT NULL
+        GROUP BY ss.song_id, ss.set_id
+        HAVING COUNT(*) >= 3
+        ORDER BY appearance_count DESC
+        """),
+      on: triple.song_id == song.id,
+      join: set in Set, on: set.id == triple.set_id,
+      select: %{
+        song_id: song.id,
+        song_title: song.title,
+        song_display_name: song.display_name,
+        set_id: set.id,
+        set_title: set.title,
+        set_date: fragment("COALESCE(?, ?)", set.date, set.release_date),
+        appearances: triple.appearance_count
+      },
+      order_by: [desc: triple.appearance_count, desc: fragment("COALESCE(?, ?)", set.date, set.release_date)]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns debut performances - first time each song was played.
+  """
+  def list_debuts do
+    from(song in Song,
+      join: debut in fragment("""
+        SELECT ss.song_id, ss.set_id, COALESCE(s.date, s.release_date) as debut_date
+        FROM set_songs ss
+        JOIN sets s ON ss.set_id = s.id
+        WHERE ss.song_id IS NOT NULL
+          AND COALESCE(s.date, s.release_date) = (
+            SELECT MIN(COALESCE(s2.date, s2.release_date))
+            FROM set_songs ss2
+            JOIN sets s2 ON ss2.set_id = s2.id
+            WHERE ss2.song_id = ss.song_id
+          )
+        """),
+      on: debut.song_id == song.id,
+      join: set in Set, on: set.id == debut.set_id,
+      select: %{
+        song_id: song.id,
+        song_title: song.title,
+        song_display_name: song.display_name,
+        set_id: set.id,
+        set_title: set.title,
+        debut_date: debut.debut_date
+      },
+      order_by: [desc: debut.debut_date]
+    )
+    |> Repo.all()
+  end
 end

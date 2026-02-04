@@ -19,8 +19,18 @@ defmodule BandcampScraperWeb.StatsLive do
       sandwiches: [],
       multisong_sandwiches: [],
       multi_sandwich_sets: [],
+      bustouts: [],
+      streaks: [],
+      openers: [],
+      closers: [],
+      pairings: [],
+      rare_songs: [],
+      longest_sets: [],
+      triple_sandwiches: [],
+      debuts: [],
       sort: "asc",
       sort_by: "song",
+      show_menu: false,
       current_user: current_user
     )}
   rescue
@@ -33,8 +43,18 @@ defmodule BandcampScraperWeb.StatsLive do
         sandwiches: [],
         multisong_sandwiches: [],
         multi_sandwich_sets: [],
+        bustouts: [],
+        streaks: [],
+        openers: [],
+        closers: [],
+        pairings: [],
+        rare_songs: [],
+        longest_sets: [],
+        triple_sandwiches: [],
+        debuts: [],
         sort: "asc",
         sort_by: "song",
+        show_menu: false,
         current_user: nil
       )}
   end
@@ -94,6 +114,33 @@ defmodule BandcampScraperWeb.StatsLive do
           sort_by: sort_by
         )
 
+      "bustouts" ->
+        assign(socket, page_title: "Bustouts", view: view, bustouts: Music.list_bustouts())
+
+      "streaks" ->
+        assign(socket, page_title: "Song Streaks", view: view, streaks: Music.list_song_streaks())
+
+      "openers" ->
+        assign(socket, page_title: "Common Openers", view: view, openers: Music.list_common_openers())
+
+      "closers" ->
+        assign(socket, page_title: "Common Closers", view: view, closers: Music.list_common_closers())
+
+      "pairings" ->
+        assign(socket, page_title: "Song Pairings", view: view, pairings: Music.list_song_pairings())
+
+      "rare_songs" ->
+        assign(socket, page_title: "Rare Songs", view: view, rare_songs: Music.list_rare_songs())
+
+      "longest_sets" ->
+        assign(socket, page_title: "Longest Sets", view: view, longest_sets: Music.list_longest_sets())
+
+      "triple_sandwiches" ->
+        assign(socket, page_title: "Triple Sandwiches", view: view, triple_sandwiches: Music.list_triple_sandwiches())
+
+      "debuts" ->
+        assign(socket, page_title: "Debut Performances", view: view, debuts: Music.list_debuts())
+
       _ ->
         assign(socket, view: "play_counts")
     end
@@ -103,7 +150,12 @@ defmodule BandcampScraperWeb.StatsLive do
 
   @impl true
   def handle_event("change_view", %{"view" => view}, socket) do
-    {:noreply, push_patch(socket, to: ~p"/stats?#{%{view: view}}")}
+    {:noreply, socket |> assign(show_menu: false) |> push_patch(to: ~p"/stats?#{%{view: view}}")}
+  end
+
+  @impl true
+  def handle_event("toggle_menu", _params, socket) do
+    {:noreply, assign(socket, show_menu: !socket.assigns.show_menu)}
   end
 
   defp format_duration(nil), do: "-"
@@ -120,43 +172,63 @@ defmodule BandcampScraperWeb.StatsLive do
       Stats
     </.header>
 
-    <div class="mb-6 flex gap-4">
+    <div class="mb-6 flex flex-wrap gap-2 md:gap-4">
       <button
         phx-click="change_view"
         phx-value-view="play_counts"
-        class={"px-4 py-2 rounded-md text-sm font-medium #{if @view == "play_counts", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
+        class={"px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium #{if @view == "play_counts", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
       >
-        Song Play Counts
+        Play Counts
       </button>
       <button
         phx-click="change_view"
         phx-value-view="durations"
-        class={"px-4 py-2 rounded-md text-sm font-medium #{if @view == "durations", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
+        class={"px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium #{if @view == "durations", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
       >
-        Longest Performances
+        Longest
       </button>
       <button
         phx-click="change_view"
         phx-value-view="sandwiches"
-        class={"px-4 py-2 rounded-md text-sm font-medium #{if @view == "sandwiches", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
+        class={"px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium #{if @view == "sandwiches", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
       >
-        Full Set Sandwiches
+        Full Sandwiches
       </button>
       <button
         phx-click="change_view"
         phx-value-view="multisong_sandwiches"
-        class={"px-4 py-2 rounded-md text-sm font-medium #{if @view == "multisong_sandwiches", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
+        class={"px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium #{if @view == "multisong_sandwiches", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
       >
         Sandwiches
       </button>
       <button
         phx-click="change_view"
         phx-value-view="multi_sandwich_sets"
-        class={"px-4 py-2 rounded-md text-sm font-medium #{if @view == "multi_sandwich_sets", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
+        class={"px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium #{if @view == "multi_sandwich_sets", do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
       >
-        Multi-Sandwich Sets
+        Multi-Sandwich
+      </button>
+      <button
+        phx-click="toggle_menu"
+        class={"px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium #{if @view in ~w(bustouts streaks openers closers pairings rare_songs longest_sets triple_sandwiches debuts), do: "bg-dosio-mint text-dosio-dark", else: "bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint"}"}
+      >
+        More ⋮
       </button>
     </div>
+
+    <%= if @show_menu do %>
+      <div class="mb-4 w-full grid grid-cols-3 md:grid-cols-5 gap-2">
+        <button phx-click="change_view" phx-value-view="bustouts" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Bustouts</button>
+        <button phx-click="change_view" phx-value-view="streaks" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Streaks</button>
+        <button phx-click="change_view" phx-value-view="openers" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Openers</button>
+        <button phx-click="change_view" phx-value-view="closers" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Closers</button>
+        <button phx-click="change_view" phx-value-view="pairings" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Pairings</button>
+        <button phx-click="change_view" phx-value-view="rare_songs" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Rare Songs</button>
+        <button phx-click="change_view" phx-value-view="longest_sets" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Longest Sets</button>
+        <button phx-click="change_view" phx-value-view="triple_sandwiches" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Triple</button>
+        <button phx-click="change_view" phx-value-view="debuts" class="px-3 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium bg-dosio-dark text-dosio-teal border border-dosio-mint/30 hover:border-dosio-mint">Debuts</button>
+      </div>
+    <% end %>
 
     <%= case @view do %>
       <% "play_counts" -> %>
@@ -319,6 +391,259 @@ defmodule BandcampScraperWeb.StatsLive do
                   </td>
                   <td class="p-0 py-4 pr-6 text-dosio-teal"><%= set.set_date %></td>
                   <td class="p-0 py-4 pr-6 text-right"><%= set.sandwich_count %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "bustouts" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Set</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Date</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Gap (Days)</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for bustout <- @bustouts do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{bustout.song_id}"} class="hover:text-dosio-mint">
+                      <%= bustout.song_display_name || bustout.song_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/sets/#{bustout.set_id}"} class="hover:text-dosio-mint">
+                      <%= bustout.set_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= bustout.set_date %></td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= bustout.gap_days %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "streaks" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Consecutive Shows</th>
+                <th class="p-0 pb-4 pr-6 font-normal">From</th>
+                <th class="p-0 pb-4 pr-6 font-normal">To</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for streak <- @streaks do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{streak.song_id}"} class="hover:text-dosio-mint">
+                      <%= streak.song_display_name || streak.song_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= streak.streak_length %></td>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= streak.streak_start %></td>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= streak.streak_end %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "openers" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Rank</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Times Opened</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for {opener, index} <- Enum.with_index(@openers, 1) do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= index %></td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{opener.song_id}"} class="hover:text-dosio-mint">
+                      <%= opener.song_display_name || opener.song_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= opener.count %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "closers" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Rank</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Times Closed</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for {closer, index} <- Enum.with_index(@closers, 1) do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= index %></td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{closer.song_id}"} class="hover:text-dosio-mint">
+                      <%= closer.song_display_name || closer.song_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= closer.count %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "pairings" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Rank</th>
+                <th class="p-0 pb-4 pr-6 font-normal">First Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal">→</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Second Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Times</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for {pairing, index} <- Enum.with_index(@pairings, 1) do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= index %></td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{pairing.song1_id}"} class="hover:text-dosio-mint">
+                      <%= pairing.song1_display_name || pairing.song1_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal">→</td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{pairing.song2_id}"} class="hover:text-dosio-mint">
+                      <%= pairing.song2_display_name || pairing.song2_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= pairing.count %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "rare_songs" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Times Played</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for song <- @rare_songs do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{song.song_id}"} class="hover:text-dosio-mint">
+                      <%= song.song_display_name || song.song_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= song.play_count %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "longest_sets" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Rank</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Set</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Date</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Songs</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Duration</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for {set, index} <- Enum.with_index(@longest_sets, 1) do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= index %></td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/sets/#{set.set_id}"} class="hover:text-dosio-mint">
+                      <%= set.set_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= set.set_date %></td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= set.song_count %></td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= format_duration(set.total_duration) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "triple_sandwiches" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Set</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Date</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">Appearances</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for triple <- @triple_sandwiches do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{triple.song_id}"} class="hover:text-dosio-mint">
+                      <%= triple.song_display_name || triple.song_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/sets/#{triple.set_id}"} class="hover:text-dosio-mint">
+                      <%= triple.set_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= triple.set_date %></td>
+                  <td class="p-0 py-4 pr-6 text-right"><%= triple.appearances %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% "debuts" -> %>
+        <div class="overflow-hidden">
+          <table class="w-full">
+            <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
+              <tr>
+                <th class="p-0 pb-4 pr-6 font-normal">Song</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Set</th>
+                <th class="p-0 pb-4 pr-6 font-normal">Debut Date</th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
+              <%= for debut <- @debuts do %>
+                <tr>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/songs/#{debut.song_id}"} class="hover:text-dosio-mint">
+                      <%= debut.song_display_name || debut.song_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6">
+                    <.link href={~p"/sets/#{debut.set_id}"} class="hover:text-dosio-mint">
+                      <%= debut.set_title %>
+                    </.link>
+                  </td>
+                  <td class="p-0 py-4 pr-6 text-dosio-teal"><%= debut.debut_date %></td>
                 </tr>
               <% end %>
             </tbody>
