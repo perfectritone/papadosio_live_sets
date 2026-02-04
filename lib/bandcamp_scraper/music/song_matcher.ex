@@ -25,6 +25,7 @@ defmodule BandcampScraper.Music.SongMatcher do
     "and this is what he though" => "And This is What He Thought",
     "and this is what he thought" => "And This is What He Thought",
     "youre a catman" => "You're A Catman",
+    "yourre a catman" => "You're A Catman",
     "the bionic man meets his pas" => "The Bionic Man Meets His Past",
     "if it wasnt for your" => "If It Wasn't For You",
     "it it wasnt for you" => "If It Wasn't For You",
