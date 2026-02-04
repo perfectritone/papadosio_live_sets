@@ -906,4 +906,151 @@ defmodule BandcampScraper.Music do
 
     Repo.all(query)
   end
+
+  @doc """
+  Returns "set sandwiches" - sets that start and end with the same song.
+
+  Returns a list of maps with song info and the sets that form sandwiches with that song.
+
+  ## Options
+
+    * `:sort` - Sort direction for song title: "asc" (default) or "desc"
+
+  """
+  def list_set_sandwiches(params \\ %{}) do
+    sort_dir = if params["sort"] == "desc", do: :desc, else: :asc
+
+    from(song in Song,
+      join: sandwich in fragment("""
+        SELECT DISTINCT ss_first.song_id, ss_first.set_id
+        FROM set_songs ss_first
+        JOIN (
+          SELECT set_id, MIN(id) as min_id, MAX(id) as max_id
+          FROM set_songs
+          GROUP BY set_id
+          HAVING MIN(id) != MAX(id)
+        ) bounds ON ss_first.set_id = bounds.set_id AND ss_first.id = bounds.min_id
+        JOIN set_songs ss_last ON ss_last.set_id = bounds.set_id AND ss_last.id = bounds.max_id
+        WHERE ss_first.song_id IS NOT NULL
+          AND ss_last.song_id IS NOT NULL
+          AND ss_first.song_id = ss_last.song_id
+        """),
+      on: sandwich.song_id == song.id,
+      join: set in Set, on: set.id == sandwich.set_id,
+      select: %{
+        song_id: song.id,
+        song_title: song.title,
+        song_display_name: song.display_name,
+        set_id: set.id,
+        set_title: set.title,
+        set_date: fragment("COALESCE(?, ?)", set.date, set.release_date)
+      },
+      order_by: [{^sort_dir, fragment("COALESCE(?, ?)", song.display_name, song.title)}, desc: fragment("COALESCE(?, ?)", set.date, set.release_date)]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns "multisong sandwiches" - a song that appears twice in a set with songs
+  between the appearances, but is NOT the first or last song of the set.
+
+  ## Options
+
+    * `:sort_by` - Column to sort by: "song" (default), "date", or "songs_between"
+    * `:sort` - Sort direction: "asc" (default) or "desc"
+
+  """
+  def list_multisong_sandwiches(params \\ %{}) do
+    sort_dir = if params["sort"] == "desc", do: :desc, else: :asc
+    sort_by = params["sort_by"] || "song"
+
+    query = from(song in Song,
+      join: sandwich in fragment("""
+        SELECT
+          ss1.song_id,
+          ss1.set_id,
+          (ss2.id - ss1.id - 1) as songs_between
+        FROM set_songs ss1
+        JOIN set_songs ss2 ON ss1.set_id = ss2.set_id
+          AND ss1.song_id = ss2.song_id
+          AND ss2.id > ss1.id + 1
+        JOIN (
+          SELECT set_id, MIN(id) as min_id, MAX(id) as max_id
+          FROM set_songs
+          GROUP BY set_id
+        ) bounds ON ss1.set_id = bounds.set_id
+        WHERE ss1.song_id IS NOT NULL
+          AND NOT (ss1.id = bounds.min_id AND ss2.id = bounds.max_id)
+        """),
+      on: sandwich.song_id == song.id,
+      join: set in Set, on: set.id == sandwich.set_id,
+      select: %{
+        song_id: song.id,
+        song_title: song.title,
+        song_display_name: song.display_name,
+        set_id: set.id,
+        set_title: set.title,
+        set_date: fragment("COALESCE(?, ?)", set.date, set.release_date),
+        songs_between: sandwich.songs_between
+      }
+    )
+
+    query = case sort_by do
+      "date" ->
+        order_by(query, [song, sandwich, set], [{^sort_dir, fragment("COALESCE(?, ?)", set.date, set.release_date)}])
+      "songs_between" ->
+        order_by(query, [song, sandwich, set], [{^sort_dir, sandwich.songs_between}])
+      _ ->
+        order_by(query, [song, sandwich, set], [{^sort_dir, fragment("COALESCE(?, ?)", song.display_name, song.title)}])
+    end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Returns sets that have more than one sandwich (multiple songs that each repeat
+  with songs between their appearances).
+
+  ## Options
+
+    * `:sort_by` - Column to sort by: "date" (default) or "sandwich_count"
+    * `:sort` - Sort direction: "asc" or "desc" (default)
+
+  """
+  def list_multi_sandwich_sets(params \\ %{}) do
+    sort_dir = if params["sort"] == "asc", do: :asc, else: :desc
+    sort_by = params["sort_by"] || "date"
+
+    query = from(set in Set,
+      join: counts in fragment("""
+        SELECT set_id, COUNT(DISTINCT song_id) as sandwich_count
+        FROM (
+          SELECT ss1.song_id, ss1.set_id
+          FROM set_songs ss1
+          JOIN set_songs ss2 ON ss1.set_id = ss2.set_id
+            AND ss1.song_id = ss2.song_id
+            AND ss2.id > ss1.id + 1
+          WHERE ss1.song_id IS NOT NULL
+        ) sandwiches
+        GROUP BY set_id
+        HAVING COUNT(DISTINCT song_id) > 1
+        """),
+      on: counts.set_id == set.id,
+      select: %{
+        set_id: set.id,
+        set_title: set.title,
+        set_date: fragment("COALESCE(?, ?)", set.date, set.release_date),
+        sandwich_count: counts.sandwich_count
+      }
+    )
+
+    query = case sort_by do
+      "sandwich_count" ->
+        order_by(query, [set, counts], [{^sort_dir, counts.sandwich_count}])
+      _ ->
+        order_by(query, [set, counts], [{^sort_dir, fragment("COALESCE(?, ?)", set.date, set.release_date)}])
+    end
+
+    Repo.all(query)
+  end
 end
