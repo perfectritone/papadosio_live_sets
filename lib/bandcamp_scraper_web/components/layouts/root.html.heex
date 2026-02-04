@@ -4,19 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
+    <link rel="icon" href={~p"/favicon.ico"} sizes="any" />
+    <link rel="apple-touch-icon" href={~p"/images/apple-touch-icon.png"} />
     <meta name="description" content="Browse Papadosio live sets, songs, and stats from their Bandcamp archive." />
 
     <!-- Open Graph / Link Preview -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content={"#{assigns[:page_title] || "Home"} · Papadosio Bandcamp"} />
     <meta property="og:description" content="Browse Papadosio live sets, songs, and stats from their Bandcamp archive." />
-    <meta property="og:image" content={assigns[:og_image] || ~p"/images/og-image.png"} />
+    <meta property="og:image" content={assigns[:og_image] || BandcampScraperWeb.Endpoint.url() <> "/images/og-image.png"} />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={"#{assigns[:page_title] || "Home"} · Papadosio Bandcamp"} />
     <meta name="twitter:description" content="Browse Papadosio live sets, songs, and stats from their Bandcamp archive." />
-    <meta name="twitter:image" content={assigns[:og_image] || ~p"/images/og-image.png"} />
+    <meta name="twitter:image" content={assigns[:og_image] || BandcampScraperWeb.Endpoint.url() <> "/images/og-image.png"} />
 
     <.live_title suffix=" · Papadosio Bandcamp">
       <%= assigns[:page_title] || "Home" %>
