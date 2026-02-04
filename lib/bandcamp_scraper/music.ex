@@ -370,9 +370,26 @@ defmodule BandcampScraper.Music do
   def list_songs(params) when is_map(params) do
     Song
     |> apply_song_search(params)
+    |> apply_play_count_filter(params)
     |> apply_song_sorting(params)
     |> Repo.all()
   end
+
+  defp apply_play_count_filter(query, %{"plays" => "multiple"}) do
+    from(s in query,
+      join: ss in assoc(s, :set_songs),
+      group_by: s.id,
+      having: count(ss.id) > 1
+    )
+  end
+  defp apply_play_count_filter(query, %{"plays" => "single"}) do
+    from(s in query,
+      join: ss in assoc(s, :set_songs),
+      group_by: s.id,
+      having: count(ss.id) == 1
+    )
+  end
+  defp apply_play_count_filter(query, _params), do: query
 
   defp apply_song_search(query, %{"search" => search}) when search != "" and search != nil do
     search_term = "%#{search}%"

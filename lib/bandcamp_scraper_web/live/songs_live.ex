@@ -13,32 +13,45 @@ defmodule BandcampScraperWeb.SongsLive do
 
     {:ok, assign(socket,
       page_title: "Songs",
-      songs: Music.list_songs(%{}),
+      songs: Music.list_songs(%{"plays" => "multiple"}),
       search: "",
       sort: "asc",
+      plays: "multiple",
       current_user: current_user
     )}
   rescue
-    Ecto.NoResultsError -> {:ok, assign(socket, page_title: "Songs", songs: Music.list_songs(%{}), search: "", sort: "asc", current_user: nil)}
+    Ecto.NoResultsError -> {:ok, assign(socket, page_title: "Songs", songs: Music.list_songs(%{"plays" => "multiple"}), search: "", sort: "asc", plays: "multiple", current_user: nil)}
   end
 
   @impl true
   def handle_params(params, _uri, socket) do
     search = params["search"] || ""
     sort = params["sort"] || "asc"
+    plays = params["plays"] || "multiple"
 
-    songs = Music.list_songs(%{"search" => search, "sort" => sort})
+    songs = Music.list_songs(%{"search" => search, "sort" => sort, "plays" => plays})
 
     {:noreply, assign(socket,
       songs: songs,
       search: search,
-      sort: sort
+      sort: sort,
+      plays: plays
     )}
   end
 
   @impl true
   def handle_event("search", %{"search" => search, "sort" => sort}, socket) do
-    {:noreply, push_patch(socket, to: ~p"/songs?#{%{search: search, sort: sort}}")}
+    {:noreply, push_patch(socket, to: ~p"/songs?#{%{search: search, sort: sort, plays: socket.assigns.plays}}")}
+  end
+
+  @impl true
+  def handle_event("toggle_plays", _, socket) do
+    next_plays = case socket.assigns.plays do
+      "all" -> "multiple"
+      "multiple" -> "single"
+      "single" -> "all"
+    end
+    {:noreply, push_patch(socket, to: ~p"/songs?#{%{search: socket.assigns.search, sort: socket.assigns.sort, plays: next_plays}}")}
   end
 
   @impl true
@@ -79,6 +92,20 @@ defmodule BandcampScraperWeb.SongsLive do
 
       <div>
         <.link href={~p"/songs"} class="text-sm text-dosio-teal hover:text-white">Clear</.link>
+      </div>
+
+      <div>
+        <button
+          type="button"
+          phx-click="toggle_plays"
+          class={"px-3 py-1.5 text-sm rounded-md border #{if @plays != "all", do: "bg-dosio-mint/20 border-dosio-mint text-dosio-mint", else: "border-dosio-mint/30 text-dosio-teal hover:border-dosio-mint"}"}
+        >
+          <%= case @plays do %>
+            <% "all" -> %>All
+            <% "multiple" -> %>Played 2+
+            <% "single" -> %>Played Once
+          <% end %>
+        </button>
       </div>
     </form>
 
