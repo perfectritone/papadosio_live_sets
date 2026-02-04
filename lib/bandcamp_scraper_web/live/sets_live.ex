@@ -112,6 +112,19 @@ defmodule BandcampScraperWeb.SetsLive do
     {:noreply, assign(socket, current_songs: new_songs)}
   end
 
+  @impl true
+  def handle_event("toggle_sort", _, socket) do
+    new_sort = if socket.assigns.sort == "desc", do: "asc", else: "desc"
+
+    query_params = %{search: socket.assigns.search, year: socket.assigns.year, season: socket.assigns.season, sort: new_sort}
+    query_params = if socket.assigns.in_order, do: Map.put(query_params, :in_order, "true"), else: query_params
+
+    filtered_songs = Enum.filter(socket.assigns.current_songs, &(&1 != ""))
+    query_params = if filtered_songs != [], do: Map.put(query_params, :songs, filtered_songs), else: query_params
+
+    {:noreply, push_patch(socket, to: ~p"/sets?#{query_params}")}
+  end
+
   defp effective_date(set), do: Set.effective_date(set)
 
   @impl true
@@ -157,13 +170,6 @@ defmodule BandcampScraperWeb.SetsLive do
           </select>
         </div>
 
-        <div>
-          <label for="sort" class="block text-sm font-medium text-dosio-teal">Sort</label>
-          <select name="sort" id="sort" class="mt-1 block rounded-md border-dosio-mint/30 shadow-sm focus:border-dosio-mint focus:ring-dosio-mint/50 sm:text-sm">
-            <option value="desc" selected={@sort == "desc"}>Newest First</option>
-            <option value="asc" selected={@sort == "asc"}>Oldest First</option>
-          </select>
-        </div>
       </div>
 
       <div class="border-t border-dosio-mint/20 pt-4">
@@ -214,20 +220,60 @@ defmodule BandcampScraperWeb.SetsLive do
       </div>
     </form>
 
-    <.table id="sets" rows={@sets}>
-      <:col :let={set} label="Title">
-        <.link href={~p"/sets/#{set}"} class="hover:text-dosio-mint"><%= set.title %></.link>
-      </:col>
-      <:col :let={set} label="Bandcamp Link">
-        <.link href={bandcamp_url_from_schema(set)} target="_blank" class="text-dosio-mint hover:text-white">Listen</.link>
-      </:col>
-      <:col :let={set} label="Date"><%= effective_date(set) %></:col>
-      <:action :let={set}>
-        <%= if @current_user && @current_user.role == "admin" do %>
-          <.link href={~p"/sets/#{set}/edit"}>Edit</.link>
-        <% end %>
-      </:action>
-    </.table>
+    <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
+      <table class="w-[40rem] mt-11 sm:w-full">
+        <thead class="text-sm text-left leading-6 text-zinc-400">
+          <tr>
+            <th class="p-0 pb-4 pr-6 font-normal">Title</th>
+            <th class="p-0 pb-4 pr-6 font-normal">Bandcamp Link</th>
+            <th class="p-0 pb-4 pr-6 font-normal">
+              <span phx-click="toggle_sort" class="cursor-pointer hover:text-dosio-mint flex items-center gap-1">
+                Date
+                <%= if @sort == "desc" do %>
+                  <span>▼</span>
+                <% else %>
+                  <span>▲</span>
+                <% end %>
+              </span>
+            </th>
+            <%= if @current_user && @current_user.role == "admin" do %>
+              <th class="relative p-0 pb-4"><span class="sr-only">Actions</span></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody class="relative divide-y divide-zinc-700 border-t border-zinc-700 text-sm leading-6 text-zinc-300">
+          <tr :for={set <- @sets} class="group hover:bg-zinc-800">
+            <td class="relative p-0">
+              <div class="block py-4 pr-6">
+                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-800 sm:rounded-l-xl" />
+                <span class="relative font-semibold text-zinc-100">
+                  <.link href={~p"/sets/#{set}"} class="hover:text-dosio-mint"><%= set.title %></.link>
+                </span>
+              </div>
+            </td>
+            <td class="relative p-0">
+              <div class="block py-4 pr-6">
+                <span class="relative">
+                  <.link href={bandcamp_url_from_schema(set)} target="_blank" class="text-dosio-mint hover:text-white">Listen</.link>
+                </span>
+              </div>
+            </td>
+            <td class="relative p-0">
+              <div class="block py-4 pr-6">
+                <span class="relative"><%= effective_date(set) %></span>
+              </div>
+            </td>
+            <%= if @current_user && @current_user.role == "admin" do %>
+              <td class="relative w-14 p-0">
+                <div class="relative py-4 text-right text-sm font-medium">
+                  <.link href={~p"/sets/#{set}/edit"} class="text-zinc-400 hover:text-zinc-300">Edit</.link>
+                </div>
+              </td>
+            <% end %>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     """
   end
 end

@@ -25,6 +25,7 @@ defmodule BandcampScraper.Music do
   """
   def list_sets do
     Set
+    |> order_by([s], desc: fragment("COALESCE(?, ?)", s.date, s.release_date))
     |> Repo.all()
   end
 
