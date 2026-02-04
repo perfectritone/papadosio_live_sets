@@ -81,13 +81,15 @@ defmodule BandcampScraperWeb.StatsLive do
         )
 
       "sandwiches" ->
-        sort = params["sort"] || "asc"
-        sandwiches = Music.list_set_sandwiches(%{"sort" => sort})
+        sort = params["sort"] || "desc"
+        sort_by = params["sort_by"] || "date"
+        sandwiches = Music.list_set_sandwiches(%{"sort" => sort, "sort_by" => sort_by})
         assign(socket,
           page_title: "Full Set Sandwiches",
           view: view,
           sandwiches: sandwiches,
-          sort: sort
+          sort: sort,
+          sort_by: sort_by
         )
 
       "multisong_sandwiches" ->
@@ -115,10 +117,16 @@ defmodule BandcampScraperWeb.StatsLive do
         )
 
       "bustouts" ->
-        assign(socket, page_title: "Bustouts", view: view, bustouts: Music.list_bustouts())
+        sort = params["sort"] || "desc"
+        sort_by = params["sort_by"] || "gap_days"
+        bustouts = Music.list_bustouts(%{"sort" => sort, "sort_by" => sort_by})
+        assign(socket, page_title: "Bustouts", view: view, bustouts: bustouts, sort: sort, sort_by: sort_by)
 
       "streaks" ->
-        assign(socket, page_title: "Song Streaks", view: view, streaks: Music.list_song_streaks())
+        sort = params["sort"] || "desc"
+        sort_by = params["sort_by"] || "streak_length"
+        streaks = Music.list_song_streaks(%{"sort" => sort, "sort_by" => sort_by})
+        assign(socket, page_title: "Song Streaks", view: view, streaks: streaks, sort: sort, sort_by: sort_by)
 
       "openers" ->
         assign(socket, page_title: "Common Openers", view: view, openers: Music.list_common_openers())
@@ -133,13 +141,21 @@ defmodule BandcampScraperWeb.StatsLive do
         assign(socket, page_title: "Rare Songs", view: view, rare_songs: Music.list_rare_songs())
 
       "longest_sets" ->
-        assign(socket, page_title: "Longest Sets", view: view, longest_sets: Music.list_longest_sets())
+        sort = params["sort"] || "desc"
+        sort_by = params["sort_by"] || "duration"
+        longest_sets = Music.list_longest_sets(%{"sort" => sort, "sort_by" => sort_by})
+        assign(socket, page_title: "Longest Sets", view: view, longest_sets: longest_sets, sort: sort, sort_by: sort_by)
 
       "triple_sandwiches" ->
-        assign(socket, page_title: "Triple Sandwiches", view: view, triple_sandwiches: Music.list_triple_sandwiches())
+        sort = params["sort"] || "desc"
+        sort_by = params["sort_by"] || "appearances"
+        triple_sandwiches = Music.list_triple_sandwiches(%{"sort" => sort, "sort_by" => sort_by})
+        assign(socket, page_title: "Triple Sandwiches", view: view, triple_sandwiches: triple_sandwiches, sort: sort, sort_by: sort_by)
 
       "debuts" ->
-        assign(socket, page_title: "Debut Performances", view: view, debuts: Music.list_debuts())
+        sort = params["sort"] || "desc"
+        debuts = Music.list_debuts(%{"sort" => sort})
+        assign(socket, page_title: "Debut Performances", view: view, debuts: debuts, sort: sort)
 
       _ ->
         assign(socket, view: "play_counts")
@@ -293,12 +309,16 @@ defmodule BandcampScraperWeb.StatsLive do
             <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
               <tr>
                 <th class="p-0 pb-4 pr-6 font-normal">
-                  <.link patch={~p"/stats?#{%{view: "sandwiches", sort: if(@sort == "asc", do: "desc", else: "asc")}}"} class="hover:text-dosio-mint">
-                    Song <%= if @sort == "asc", do: "↑", else: "↓" %>
+                  <.link patch={~p"/stats?#{%{view: "sandwiches", sort_by: "song", sort: if(@sort_by == "song" && @sort == "asc", do: "desc", else: "asc")}}"} class="hover:text-dosio-mint">
+                    Song <%= if @sort_by == "song", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
                   </.link>
                 </th>
                 <th class="p-0 pb-4 pr-6 font-normal">Set</th>
-                <th class="p-0 pb-4 pr-6 font-normal">Date</th>
+                <th class="p-0 pb-4 pr-6 font-normal">
+                  <.link patch={~p"/stats?#{%{view: "sandwiches", sort_by: "date", sort: if(@sort_by == "date" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Date <%= if @sort_by == "date", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
               </tr>
             </thead>
             <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
@@ -403,8 +423,16 @@ defmodule BandcampScraperWeb.StatsLive do
               <tr>
                 <th class="p-0 pb-4 pr-6 font-normal">Song</th>
                 <th class="p-0 pb-4 pr-6 font-normal">Set</th>
-                <th class="p-0 pb-4 pr-6 font-normal">Date</th>
-                <th class="p-0 pb-4 pr-6 font-normal text-right">Gap (Days)</th>
+                <th class="p-0 pb-4 pr-6 font-normal">
+                  <.link patch={~p"/stats?#{%{view: "bustouts", sort_by: "date", sort: if(@sort_by == "date" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Date <%= if @sort_by == "date", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">
+                  <.link patch={~p"/stats?#{%{view: "bustouts", sort_by: "gap_days", sort: if(@sort_by == "gap_days" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Gap (Days) <%= if @sort_by == "gap_days", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
               </tr>
             </thead>
             <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
@@ -433,8 +461,16 @@ defmodule BandcampScraperWeb.StatsLive do
             <thead class="text-sm text-left leading-6 text-dosio-teal border-b border-dosio-mint/20">
               <tr>
                 <th class="p-0 pb-4 pr-6 font-normal">Song</th>
-                <th class="p-0 pb-4 pr-6 font-normal text-right">Consecutive Shows</th>
-                <th class="p-0 pb-4 pr-6 font-normal">From</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">
+                  <.link patch={~p"/stats?#{%{view: "streaks", sort_by: "streak_length", sort: if(@sort_by == "streak_length" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Consecutive Shows <%= if @sort_by == "streak_length", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
+                <th class="p-0 pb-4 pr-6 font-normal">
+                  <.link patch={~p"/stats?#{%{view: "streaks", sort_by: "date", sort: if(@sort_by == "date" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    From <%= if @sort_by == "date", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
                 <th class="p-0 pb-4 pr-6 font-normal">To</th>
               </tr>
             </thead>
@@ -567,9 +603,17 @@ defmodule BandcampScraperWeb.StatsLive do
               <tr>
                 <th class="p-0 pb-4 pr-6 font-normal">Rank</th>
                 <th class="p-0 pb-4 pr-6 font-normal">Set</th>
-                <th class="p-0 pb-4 pr-6 font-normal">Date</th>
+                <th class="p-0 pb-4 pr-6 font-normal">
+                  <.link patch={~p"/stats?#{%{view: "longest_sets", sort_by: "date", sort: if(@sort_by == "date" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Date <%= if @sort_by == "date", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
                 <th class="p-0 pb-4 pr-6 font-normal text-right">Songs</th>
-                <th class="p-0 pb-4 pr-6 font-normal text-right">Duration</th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">
+                  <.link patch={~p"/stats?#{%{view: "longest_sets", sort_by: "duration", sort: if(@sort_by == "duration" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Duration <%= if @sort_by == "duration", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
               </tr>
             </thead>
             <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
@@ -596,8 +640,16 @@ defmodule BandcampScraperWeb.StatsLive do
               <tr>
                 <th class="p-0 pb-4 pr-6 font-normal">Song</th>
                 <th class="p-0 pb-4 pr-6 font-normal">Set</th>
-                <th class="p-0 pb-4 pr-6 font-normal">Date</th>
-                <th class="p-0 pb-4 pr-6 font-normal text-right">Appearances</th>
+                <th class="p-0 pb-4 pr-6 font-normal">
+                  <.link patch={~p"/stats?#{%{view: "triple_sandwiches", sort_by: "date", sort: if(@sort_by == "date" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Date <%= if @sort_by == "date", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
+                <th class="p-0 pb-4 pr-6 font-normal text-right">
+                  <.link patch={~p"/stats?#{%{view: "triple_sandwiches", sort_by: "appearances", sort: if(@sort_by == "appearances" && @sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Appearances <%= if @sort_by == "appearances", do: (if @sort == "asc", do: "↑", else: "↓"), else: "" %>
+                  </.link>
+                </th>
               </tr>
             </thead>
             <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">
@@ -627,7 +679,11 @@ defmodule BandcampScraperWeb.StatsLive do
               <tr>
                 <th class="p-0 pb-4 pr-6 font-normal">Song</th>
                 <th class="p-0 pb-4 pr-6 font-normal">Set</th>
-                <th class="p-0 pb-4 pr-6 font-normal">Debut Date</th>
+                <th class="p-0 pb-4 pr-6 font-normal">
+                  <.link patch={~p"/stats?#{%{view: "debuts", sort: if(@sort == "desc", do: "asc", else: "desc")}}"} class="hover:text-dosio-mint">
+                    Debut Date <%= if @sort == "asc", do: "↑", else: "↓" %>
+                  </.link>
+                </th>
               </tr>
             </thead>
             <tbody class="relative divide-y divide-dosio-mint/10 border-t border-dosio-mint/20 text-sm leading-6 text-white">

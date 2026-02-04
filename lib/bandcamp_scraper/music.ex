@@ -946,8 +946,9 @@ defmodule BandcampScraper.Music do
   """
   def list_set_sandwiches(params \\ %{}) do
     sort_dir = if params["sort"] == "desc", do: :desc, else: :asc
+    sort_by = params["sort_by"] || "song"
 
-    from(song in Song,
+    base_query = from(song in Song,
       join: sandwich in fragment("""
         SELECT DISTINCT ss_first.song_id, ss_first.set_id
         FROM set_songs ss_first
@@ -971,10 +972,21 @@ defmodule BandcampScraper.Music do
         set_id: set.id,
         set_title: set.title,
         set_date: fragment("COALESCE(?, ?)", set.date, set.release_date)
-      },
-      order_by: [{^sort_dir, fragment("COALESCE(?, ?)", song.display_name, song.title)}, desc: fragment("COALESCE(?, ?)", set.date, set.release_date)]
+      }
     )
-    |> Repo.all()
+
+    query = case sort_by do
+      "date" ->
+        from([song, sandwich, set] in base_query,
+          order_by: [{^sort_dir, fragment("COALESCE(?, ?)", set.date, set.release_date)}]
+        )
+      _ ->
+        from([song, sandwich, set] in base_query,
+          order_by: [{^sort_dir, fragment("COALESCE(?, ?)", song.display_name, song.title)}, desc: fragment("COALESCE(?, ?)", set.date, set.release_date)]
+        )
+    end
+
+    Repo.all(query)
   end
 
   @doc """
@@ -1085,7 +1097,15 @@ defmodule BandcampScraper.Music do
   Returns songs that have returned after the longest gaps (bustouts).
   Shows the song, the set it returned in, and days since last played.
   """
-  def list_bustouts do
+  def list_bustouts(params \\ %{}) do
+    sort_by = params["sort_by"] || "gap_days"
+    sort_dir = if params["sort"] == "asc", do: "ASC", else: "DESC"
+
+    order_clause = case sort_by do
+      "date" -> "sa.play_date #{sort_dir}"
+      _ -> "gap_days #{sort_dir}"
+    end
+
     sql = """
     WITH song_appearances AS (
       SELECT
@@ -1104,7 +1124,7 @@ defmodule BandcampScraper.Music do
     JOIN songs s ON s.id = sa.song_id
     JOIN sets st ON st.id = sa.set_id
     WHERE sa.prev_date IS NOT NULL
-    ORDER BY gap_days DESC
+    ORDER BY #{order_clause}
     LIMIT 100
     """
 
@@ -1125,7 +1145,15 @@ defmodule BandcampScraper.Music do
   @doc """
   Returns songs played at the most consecutive shows.
   """
-  def list_song_streaks do
+  def list_song_streaks(params \\ %{}) do
+    sort_by = params["sort_by"] || "streak_length"
+    sort_dir = if params["sort"] == "asc", do: "ASC", else: "DESC"
+
+    order_clause = case sort_by do
+      "date" -> "ms.streak_start #{sort_dir}"
+      _ -> "ms.max_streak #{sort_dir}, s.display_name, s.title"
+    end
+
     sql = """
     WITH ordered_sets AS (
       SELECT id, COALESCE(date, release_date) as play_date,
@@ -1158,7 +1186,7 @@ defmodule BandcampScraper.Music do
            ms.max_streak as streak_length, ms.streak_start, ms.streak_end
     FROM max_streaks ms
     JOIN songs s ON s.id = ms.song_id
-    ORDER BY ms.max_streak DESC, s.display_name, s.title
+    ORDER BY #{order_clause}
     LIMIT 100
     """
 
@@ -1286,8 +1314,11 @@ defmodule BandcampScraper.Music do
   @doc """
   Returns sets ordered by total duration.
   """
-  def list_longest_sets do
-    from(set in Set,
+  def list_longest_sets(params \\ %{}) do
+    sort_by = params["sort_by"] || "duration"
+    sort_dir = if params["sort"] == "asc", do: :asc, else: :desc
+
+    base_query = from(set in Set,
       join: ss in SetSong, on: ss.set_id == set.id,
       group_by: set.id,
       select: %{
@@ -1296,9 +1327,21 @@ defmodule BandcampScraper.Music do
         set_date: fragment("COALESCE(?, ?)", set.date, set.release_date),
         total_duration: sum(ss.duration),
         song_count: count(ss.id)
-      },
-      order_by: [desc: sum(ss.duration)]
+      }
     )
+
+    query = case sort_by do
+      "date" ->
+        from([set, ss] in base_query,
+          order_by: [{^sort_dir, fragment("COALESCE(?, ?)", set.date, set.release_date)}]
+        )
+      _ ->
+        from([set, ss] in base_query,
+          order_by: [{^sort_dir, sum(ss.duration)}]
+        )
+    end
+
+    query
     |> Repo.all()
     |> Enum.filter(& &1.total_duration)
   end
@@ -1306,15 +1349,17 @@ defmodule BandcampScraper.Music do
   @doc """
   Returns songs that appear 3+ times in a single set (triple sandwiches).
   """
-  def list_triple_sandwiches do
-    from(song in Song,
+  def list_triple_sandwiches(params \\ %{}) do
+    sort_by = params["sort_by"] || "appearances"
+    sort_dir = if params["sort"] == "asc", do: :asc, else: :desc
+
+    base_query = from(song in Song,
       join: triple in fragment("""
         SELECT ss.song_id, ss.set_id, COUNT(*) as appearance_count
         FROM set_songs ss
         WHERE ss.song_id IS NOT NULL
         GROUP BY ss.song_id, ss.set_id
         HAVING COUNT(*) >= 3
-        ORDER BY appearance_count DESC
         """),
       on: triple.song_id == song.id,
       join: set in Set, on: set.id == triple.set_id,
@@ -1326,16 +1371,29 @@ defmodule BandcampScraper.Music do
         set_title: set.title,
         set_date: fragment("COALESCE(?, ?)", set.date, set.release_date),
         appearances: triple.appearance_count
-      },
-      order_by: [desc: triple.appearance_count, desc: fragment("COALESCE(?, ?)", set.date, set.release_date)]
+      }
     )
-    |> Repo.all()
+
+    query = case sort_by do
+      "date" ->
+        from([song, triple, set] in base_query,
+          order_by: [{^sort_dir, fragment("COALESCE(?, ?)", set.date, set.release_date)}]
+        )
+      _ ->
+        from([song, triple, set] in base_query,
+          order_by: [{^sort_dir, triple.appearance_count}, desc: fragment("COALESCE(?, ?)", set.date, set.release_date)]
+        )
+    end
+
+    Repo.all(query)
   end
 
   @doc """
   Returns debut performances - first time each song was played.
   """
-  def list_debuts do
+  def list_debuts(params \\ %{}) do
+    sort_dir = if params["sort"] == "asc", do: :asc, else: :desc
+
     from(song in Song,
       join: debut in fragment("""
         SELECT ss.song_id, ss.set_id, COALESCE(s.date, s.release_date) as debut_date
@@ -1359,7 +1417,7 @@ defmodule BandcampScraper.Music do
         set_title: set.title,
         debut_date: debut.debut_date
       },
-      order_by: [desc: debut.debut_date]
+      order_by: [{^sort_dir, debut.debut_date}]
     )
     |> Repo.all()
   end
