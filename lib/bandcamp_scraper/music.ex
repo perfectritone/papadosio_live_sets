@@ -266,6 +266,15 @@ defmodule BandcampScraper.Music do
   end
 
   @doc """
+  Gets a single set by URN.
+
+  Returns `nil` if the Set does not exist.
+  """
+  def get_set_by_urn(urn) do
+    Repo.get_by(Set, urn: urn)
+  end
+
+  @doc """
   Creates a set.
 
   ## Examples

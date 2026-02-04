@@ -9,7 +9,8 @@ defmodule BandcampScraper.ScrapePersister do
   end
 
   def persist_set(set_data) do
-    Music.get_set_by_title(set_data.title)
+    # Check by URN first (normalized), then fall back to title
+    (Music.get_set_by_urn(set_data.urn) || Music.get_set_by_title(set_data.title))
     |> create_set_unless_exists(set_data)
   end
 
